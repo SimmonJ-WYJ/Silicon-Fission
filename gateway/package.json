@@ -1,0 +1,23 @@
+{
+  "name": "@silicon-fission/gateway",
+  "version": "0.0.1",
+  "description": "Silicon Fission LLM gateway — unified OpenAI-compatible API with smart routing and fallbacks",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.7",
+    "hono": "^4.6.14"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
