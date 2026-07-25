@@ -7,7 +7,7 @@ type Tab = "login" | "register";
 
 export function AuthForm() {
   const [tab, setTab] = useState<Tab>("login");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   const [agree, setAgree] = useState(false);
@@ -17,8 +17,8 @@ export function AuthForm() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setNotice(null);
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-      setNotice({ ok: false, text: "请输入有效的邮箱地址" });
+    if (username.trim().length < 3) {
+      setNotice({ ok: false, text: "用户名至少 3 个字符" });
       return;
     }
     if (password.length < 8) {
@@ -37,8 +37,19 @@ export function AuthForm() {
     }
     setBusy(true);
     try {
-      const res = tab === "login" ? await login(email, password) : await register(email, password);
-      setNotice({ ok: res.ok, text: res.message });
+      if (tab === "login") {
+        const res = await login(username.trim(), password);
+        setNotice({ ok: res.ok, text: res.ok ? "登录成功,正在进入控制台…" : res.message });
+        if (res.ok) {
+          setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 600);
+        }
+      } else {
+        const res = await register(username.trim(), password);
+        setNotice({ ok: res.ok, text: res.ok ? "注册成功,请登录" : res.message });
+        if (res.ok) setTab("login");
+      }
     } finally {
       setBusy(false);
     }
@@ -68,12 +79,11 @@ export function AuthForm() {
 
       <form onSubmit={submit} className="space-y-4">
         <div>
-          <label className="text-xs text-[var(--color-faint)]">邮箱</label>
+          <label className="text-xs text-[var(--color-faint)]">用户名</label>
           <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="用户名(如 root)"
             className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel-2)] px-3 py-2.5 text-sm outline-none placeholder:text-[var(--color-faint)] focus:border-[var(--color-brand)]"
           />
         </div>

@@ -21,16 +21,28 @@ npm install
 npm run dev          # http://localhost:3001
 ```
 
-## 对接后端
+## 对接后端(已实现:new-api)
 
-当前用 `lib/models.ts` 的 mock 数据。上线时:
-
-1. 在 `lib/api.ts` 里把 `getModels()` 改成 `fetch(后端 /v1/models)`。
-2. 设置环境变量 `NEXT_PUBLIC_API_BASE` 指向你的网关地址(Playground 与真实请求都走它)。
+前端通过本站的 Next.js API 路由(`app/api/*`)服务端代理到 new-api 后端——浏览器不直接接触后端地址,无 CORS 问题,后端拓扑不暴露。
 
 ```bash
-NEXT_PUBLIC_API_BASE=https://api.你的域名.com npm run build
+# 本地把 new-api 跑在 3000 端口(见 ../deploy),然后:
+cd web
+echo "NEWAPI_BASE=http://localhost:3000" > .env.local
+npm install && npm run dev     # http://localhost:3001
 ```
+
+已打通的真实功能:
+
+| 页面 | 功能 | 代理路由 → new-api 接口 |
+|---|---|---|
+| /login | 登录/注册(JWT 存 httpOnly cookie) | `/api/auth/*` → `/api/user/login`、`/api/user/register` |
+| /dashboard | 真实余额、API Key 列表/新建/查看完整 Key | `/api/me`、`/api/keys*` → `/api/user/self`、`/api/token/*` |
+| /chat | 选真实可用模型,用 sk- Key 发起对话 | `/api/chat` → `/v1/chat/completions` |
+
+使用流程:后台(new-api 管理端)配置渠道 → 用户在本站注册/登录 → 控制台建 Key → Playground 或 OpenAI SDK 调模型 → 账户按量扣费。
+
+额度换算:new-api 默认 500000 quota = $1(见 `lib/newapi-server.ts` 的 `QUOTA_PER_USD`)。
 
 ## 设计说明
 

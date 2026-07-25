@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { API_BASE } from "@/lib/api";
+import { useEffect, useState } from "react";
+import { fetchMyModels } from "@/lib/api";
 
 interface Msg {
   role: "user" | "assistant" | "system";
@@ -10,11 +10,23 @@ interface Msg {
 
 export function Playground({ models }: { models: { id: string; name: string }[] }) {
   const [apiKey, setApiKey] = useState("");
+  const [options, setOptions] = useState(models);
+  const [live, setLive] = useState(false); // 是否加载到了后端真实模型
   const [model, setModel] = useState(models[0]?.id ?? "");
   const [input, setInput] = useState("");
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchMyModels().then((list) => {
+      if (list && list.length > 0) {
+        setOptions(list.map((id) => ({ id, name: id })));
+        setModel(list[0]);
+        setLive(true);
+      }
+    });
+  }, []);
 
   async function send() {
     if (!input.trim() || loading) return;
@@ -24,30 +36,19 @@ export function Playground({ models }: { models: { id: string; name: string }[] 
     setInput("");
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/v1/chat/completions`, {
+      const res = await fetch("/api/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey || "sk-sf-demo"}`,
-        },
-        body: JSON.stringify({ model, messages: next }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model, messages: next, key: apiKey.trim() }),
       });
-      if (!res.ok) {
-        const t = await res.text();
-        throw new Error(`网关返回 ${res.status}: ${t.slice(0, 200)}`);
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data) {
+        throw new Error(data?.error?.message || `请求失败 (HTTP ${res.status})`);
       }
-      const data = await res.json();
       const reply = data.choices?.[0]?.message?.content ?? "(空响应)";
-      const provider = res.headers.get("x-sf-provider");
-      setMsgs([
-        ...next,
-        { role: "assistant", content: reply + (provider ? `\n\n— 由 ${provider} 提供` : "") },
-      ]);
+      setMsgs([...next, { role: "assistant", content: reply }]);
     } catch (e) {
-      setError(
-        (e as Error).message +
-          "  ·  提示:需要本地启动 gateway 并配置上游 Key(见 gateway/README)。",
-      );
+      setError((e as Error).message);
     } finally {
       setLoading(false);
     }
@@ -64,10 +65,7 @@ export function Playground({ models }: { models: { id: string; name: string }[] 
             </div>
           )}
           {msgs.map((m, i) => (
-            <div
-              key={i}
-              className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
-            >
+            <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               <div
                 className={`max-w-[80%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm ${
                   m.role === "user"
@@ -113,13 +111,15 @@ export function Playground({ models }: { models: { id: string; name: string }[] 
       {/* Settings column */}
       <div className="card h-fit space-y-4 p-4">
         <div>
-          <label className="text-xs text-[var(--color-faint)]">模型</label>
+          <label className="text-xs text-[var(--color-faint)]">
+            模型 {live && <span className="text-[var(--color-green)]">(来自后端)</span>}
+          </label>
           <select
             value={model}
             onChange={(e) => setModel(e.target.value)}
             className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel-2)] px-3 py-2 text-sm outline-none"
           >
-            {models.map((m) => (
+            {options.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.name}
               </option>
@@ -132,13 +132,13 @@ export function Playground({ models }: { models: { id: string; name: string }[] 
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             type="password"
-            placeholder="sk-sf-…"
+            placeholder="sk-…(控制台可创建)"
             className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel-2)] px-3 py-2 text-sm outline-none placeholder:text-[var(--color-faint)]"
           />
         </div>
         <div className="rounded-lg bg-[var(--color-panel-2)] p-3 text-xs text-[var(--color-faint)]">
-          请求直接发往 <code>{API_BASE}</code>。修改 <code>NEXT_PUBLIC_API_BASE</code>
-          可切换到线上网关。
+          请求经由本站代理转发到网关,后端地址不暴露。没有 Key?去
+          <a href="/dashboard" className="text-[var(--color-brand-2)]"> 控制台 </a>创建。
         </div>
       </div>
     </div>

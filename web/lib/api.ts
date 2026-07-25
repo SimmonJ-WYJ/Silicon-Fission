@@ -16,22 +16,88 @@ export async function getModels(): Promise<Model[]> {
 export const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8788";
 
-// ---- 账户与充值(mock,待后端就绪后替换为真实请求) ----
+// ---- 账户(真实对接:走本站 /api/* 代理到 new-api 后端) ----
 
 export interface AuthResult {
   ok: boolean;
   message: string;
 }
 
-/** 登录/注册。后端就绪后改为 POST /api/auth/login 等 */
-export async function login(email: string, _password: string): Promise<AuthResult> {
-  await new Promise((r) => setTimeout(r, 600)); // 模拟网络延迟
-  return { ok: true, message: `欢迎回来,${email}(演示模式,后端未接入)` };
+export async function login(username: string, password: string): Promise<AuthResult> {
+  const res = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+  const body = await res.json().catch(() => ({}));
+  return { ok: res.ok && body.success, message: body.message || (res.ok ? "登录成功" : "登录失败") };
 }
 
-export async function register(email: string, _password: string): Promise<AuthResult> {
-  await new Promise((r) => setTimeout(r, 600));
-  return { ok: true, message: `账号 ${email} 注册成功(演示模式,后端未接入)` };
+export async function register(username: string, password: string): Promise<AuthResult> {
+  const res = await fetch("/api/auth/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+  const body = await res.json().catch(() => ({}));
+  return { ok: res.ok && body.success, message: body.message || (res.ok ? "注册成功,请登录" : "注册失败") };
+}
+
+export interface Me {
+  id: number;
+  username: string;
+  displayName: string;
+  group: string;
+  quota: number;
+  balanceUsd: number;
+}
+
+export interface ApiKeyItem {
+  id: number;
+  name: string;
+  maskedKey: string;
+  enabled: boolean;
+  createdAt: string;
+  usedUsd: number;
+  remainUsd: number | null;
+}
+
+export async function fetchMe(): Promise<Me | null> {
+  const res = await fetch("/api/me");
+  if (!res.ok) return null;
+  const body = await res.json();
+  return body.success ? (body.data as Me) : null;
+}
+
+export async function fetchKeys(): Promise<ApiKeyItem[] | null> {
+  const res = await fetch("/api/keys");
+  if (!res.ok) return null;
+  const body = await res.json();
+  return body.success ? (body.data as ApiKeyItem[]) : null;
+}
+
+export async function createKey(name: string): Promise<AuthResult> {
+  const res = await fetch("/api/keys", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  const body = await res.json().catch(() => ({}));
+  return { ok: res.ok && body.success, message: body.message || (res.ok ? "创建成功" : "创建失败") };
+}
+
+export async function revealKey(id: number): Promise<string | null> {
+  const res = await fetch(`/api/keys/${id}/reveal`, { method: "POST" });
+  if (!res.ok) return null;
+  const body = await res.json();
+  return body.success ? body.data.key : null;
+}
+
+export async function fetchMyModels(): Promise<string[] | null> {
+  const res = await fetch("/api/models");
+  if (!res.ok) return null;
+  const body = await res.json();
+  return body.success ? (body.data as string[]) : null;
 }
 
 export interface TopupOrder {
