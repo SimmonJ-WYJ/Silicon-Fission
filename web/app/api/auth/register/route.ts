@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { napiFetch } from "@/lib/newapi-server";
+import { isDemo } from "@/lib/demo";
 
 export async function POST(req: Request) {
   const { username, password } = await req.json().catch(() => ({}));
   if (!username || !password) {
     return NextResponse.json({ success: false, message: "缺少用户名或密码" }, { status: 400 });
+  }
+  if (isDemo()) {
+    return NextResponse.json({ success: true, demo: true });
   }
   const { body } = await napiFetch("/api/user/register", {
     method: "POST",

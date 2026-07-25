@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import { getSessionToken, napiFetch } from "@/lib/newapi-server";
+import { isDemo, demoUser, DEMO_MODELS } from "@/lib/demo";
 
-// 已登录:返回该用户可用的模型列表(来自 new-api /api/user/models)
-// 未登录:返回 401,前端回落到静态目录展示
 export async function GET() {
+  if (isDemo()) {
+    const user = await demoUser();
+    if (!user) return NextResponse.json({ success: false, message: "未登录" }, { status: 401 });
+    return NextResponse.json({ success: true, data: DEMO_MODELS });
+  }
+
   const token = await getSessionToken();
   if (!token) return NextResponse.json({ success: false, message: "未登录" }, { status: 401 });
 

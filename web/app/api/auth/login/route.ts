@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { napiFetch, TOKEN_COOKIE } from "@/lib/newapi-server";
+import { isDemo, DEMO_COOKIE, DEMO_USER_COOKIE, COOKIE_OPTS } from "@/lib/demo";
 
 interface LoginData {
   access_token: string;
@@ -10,6 +11,14 @@ export async function POST(req: Request) {
   const { username, password } = await req.json().catch(() => ({}));
   if (!username || !password) {
     return NextResponse.json({ success: false, message: "缺少用户名或密码" }, { status: 400 });
+  }
+
+  // 演示模式:任意用户名密码即可登录,数据为示例
+  if (isDemo()) {
+    const res = NextResponse.json({ success: true, demo: true });
+    res.cookies.set(DEMO_COOKIE, "1", COOKIE_OPTS);
+    res.cookies.set(DEMO_USER_COOKIE, String(username).slice(0, 40), COOKIE_OPTS);
+    return res;
   }
 
   const { body } = await napiFetch<LoginData>("/api/user/login", {

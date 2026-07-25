@@ -1,14 +1,21 @@
 import { NextResponse } from "next/server";
 import { getSessionToken, napiFetch } from "@/lib/newapi-server";
+import { isDemo, demoUser, fakeKey } from "@/lib/demo";
 
 export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
-  const token = await getSessionToken();
-  if (!token) return NextResponse.json({ success: false, message: "未登录" }, { status: 401 });
-
   const { id } = await ctx.params;
   if (!/^\d+$/.test(id)) {
     return NextResponse.json({ success: false, message: "非法 ID" }, { status: 400 });
   }
+
+  if (isDemo()) {
+    const user = await demoUser();
+    if (!user) return NextResponse.json({ success: false, message: "未登录" }, { status: 401 });
+    return NextResponse.json({ success: true, data: { key: fakeKey(Number(id)) } });
+  }
+
+  const token = await getSessionToken();
+  if (!token) return NextResponse.json({ success: false, message: "未登录" }, { status: 401 });
 
   const { body } = await napiFetch<{ key?: string } | string>(
     `/api/token/${id}/key`,

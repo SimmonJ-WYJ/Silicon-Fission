@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { napiFetch } from "@/lib/newapi-server";
+import { isDemo } from "@/lib/demo";
 
-// GET: 后端初始化状态;POST: 初始化(创建 root 管理员,默认开启自用模式)
 export async function GET() {
+  if (isDemo()) {
+    return NextResponse.json({ success: true, data: { initialized: true }, demo: true });
+  }
   try {
     const { body } = await napiFetch<{ status: boolean; root_init?: boolean }>("/api/setup");
     return NextResponse.json({
@@ -22,6 +25,9 @@ export async function POST(req: Request) {
   if (!username || !password || password.length < 8) {
     return NextResponse.json({ success: false, message: "用户名必填,密码至少 8 位" }, { status: 400 });
   }
+  if (isDemo()) {
+    return NextResponse.json({ success: true, demo: true });
+  }
   try {
     const { body } = await napiFetch("/api/setup", {
       method: "POST",
@@ -29,7 +35,7 @@ export async function POST(req: Request) {
         username,
         password,
         confirmPassword: password,
-        SelfUseModeEnabled: true, // 自用模式:跳过逐模型定价,配好渠道即可调用
+        SelfUseModeEnabled: true,
         DemoSiteEnabled: false,
       }),
     });

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionToken, napiFetch, QUOTA_PER_USD } from "@/lib/newapi-server";
+import { isDemo, demoUser } from "@/lib/demo";
 
 interface SelfData {
   id: number;
@@ -11,6 +12,22 @@ interface SelfData {
 }
 
 export async function GET() {
+  if (isDemo()) {
+    const user = await demoUser();
+    if (!user) return NextResponse.json({ success: false, message: "未登录" }, { status: 401 });
+    return NextResponse.json({
+      success: true,
+      data: {
+        id: 0,
+        username: user,
+        displayName: user,
+        group: "demo",
+        quota: 2_500_000,
+        balanceUsd: 5,
+      },
+    });
+  }
+
   const token = await getSessionToken();
   if (!token) return NextResponse.json({ success: false, message: "未登录" }, { status: 401 });
 

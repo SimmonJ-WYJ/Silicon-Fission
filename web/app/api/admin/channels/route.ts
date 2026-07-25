@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server";
 import { getSessionToken, napiFetch } from "@/lib/newapi-server";
+import {
+  isDemo,
+  demoUser,
+  demoChannels,
+  DEMO_CH_COOKIE,
+  COOKIE_OPTS,
+  type DemoChannel,
+} from "@/lib/demo";
 
 interface ChannelItem {
   id: number;
@@ -14,6 +22,12 @@ interface ChannelItem {
 }
 
 export async function GET() {
+  if (isDemo()) {
+    const user = await demoUser();
+    if (!user) return NextResponse.json({ success: false, message: "未登录" }, { status: 401 });
+    return NextResponse.json({ success: true, data: await demoChannels() });
+  }
+
   const token = await getSessionToken();
   if (!token) return NextResponse.json({ success: false, message: "未登录" }, { status: 401 });
 
@@ -47,13 +61,27 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const token = await getSessionToken();
-  if (!token) return NextResponse.json({ success: false, message: "未登录" }, { status: 401 });
-
   const { name, baseUrl, key, models } = await req.json().catch(() => ({}));
   if (!name || !key || !models) {
     return NextResponse.json({ success: false, message: "名称、Key、模型均必填" }, { status: 400 });
   }
+
+  if (isDemo()) {
+    const user = await demoUser();
+    if (!user) return NextResponse.json({ success: false, message: "未登录" }, { status: 401 });
+    const list = await demoChannels();
+    const id = (list.at(-1)?.id ?? 0) + 1;
+    const next: DemoChannel[] = [
+      ...list,
+      { id, name, baseUrl: baseUrl || "", models, enabled: true, usedQuota: 0, responseTimeMs: 0 },
+    ];
+    const res = NextResponse.json({ success: true });
+    res.cookies.set(DEMO_CH_COOKIE, JSON.stringify(next), COOKIE_OPTS);
+    return res;
+  }
+
+  const token = await getSessionToken();
+  if (!token) return NextResponse.json({ success: false, message: "未登录" }, { status: 401 });
 
   try {
     const { body } = await napiFetch(
@@ -63,7 +91,7 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           mode: "single",
           channel: {
-            type: 1, // OpenAI 兼容(DeepSeek/SiliconFlow/Moonshot 等均适用,填对应 base_url)
+            type: 1,
             name,
             key,
             base_url: baseUrl || "",
