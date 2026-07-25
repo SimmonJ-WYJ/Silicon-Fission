@@ -20,10 +20,6 @@ export default async function Home() {
       {/* Hero */}
       <section className="hero-glow">
         <div className="mx-auto max-w-7xl px-6 pb-16 pt-20 text-center">
-          <div className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-1 text-xs text-[var(--color-muted)]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-green)]" />
-            中国用户不翻墙即可调用 GPT · Claude · Gemini
-          </div>
           <h1 className="mx-auto max-w-3xl text-4xl font-bold leading-tight sm:text-6xl">
             一个接口,<span className="brand-gradient">裂变</span>所有大模型的算力
           </h1>
