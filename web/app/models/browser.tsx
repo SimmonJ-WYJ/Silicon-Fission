@@ -68,7 +68,7 @@ export function ModelsBrowser({ models, series }: { models: Model[]; series: str
                 className={`rounded-full border px-2.5 py-1 text-xs transition ${
                   activeSeries.includes(s)
                     ? "border-[var(--color-brand)] bg-[var(--color-brand)]/15 text-[var(--color-text)]"
-                    : "border-[var(--color-border)] text-[var(--color-muted)] hover:border-[#33373f]"
+                    : "border-[var(--color-border)] text-[var(--color-muted)] hover:border-[#c9d0dc]"
                 }`}
               >
                 {s}
@@ -85,7 +85,7 @@ export function ModelsBrowser({ models, series }: { models: Model[]; series: str
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="搜索模型或厂商…"
-            className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm outline-none placeholder:text-[var(--color-faint)] focus:border-[#33373f]"
+            className="flex-1 rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 text-sm outline-none placeholder:text-[var(--color-faint)] focus:border-[#c9d0dc]"
           />
           <select
             value={sort}

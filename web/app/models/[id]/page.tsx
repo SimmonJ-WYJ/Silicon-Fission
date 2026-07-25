@@ -28,7 +28,7 @@ export default async function ModelDetail({ params }: { params: Promise<{ id: st
         </div>
         <Link
           href="/chat"
-          className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-gray-200"
+          className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
         >
           在对话中试用
         </Link>

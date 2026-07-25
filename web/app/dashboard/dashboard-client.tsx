@@ -72,7 +72,7 @@ export function DashboardClient() {
         </p>
         <a
           href="/login"
-          className="mt-5 inline-block rounded-lg bg-white px-5 py-2 text-sm font-medium text-black hover:bg-gray-200"
+          className="mt-5 inline-block rounded-lg bg-gray-900 px-5 py-2 text-sm font-medium text-white hover:bg-gray-700"
         >
           去登录
         </a>
@@ -102,7 +102,7 @@ export function DashboardClient() {
           <div className="mt-1 text-3xl font-semibold">${me.balanceUsd}</div>
           <a
             href="/topup"
-            className="mt-3 inline-block rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-black hover:bg-gray-200"
+            className="mt-3 inline-block rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-700"
           >
             充值
           </a>
@@ -142,7 +142,7 @@ export function DashboardClient() {
           <button
             onClick={onCreateKey}
             disabled={busy}
-            className="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-black hover:bg-gray-200 disabled:opacity-50"
+            className="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
           >
             + 新建 Key
           </button>

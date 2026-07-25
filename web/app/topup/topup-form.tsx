@@ -55,7 +55,7 @@ export function TopupForm() {
                 className={`rounded-xl border px-4 py-3 text-center transition ${
                   !custom && amount === v
                     ? "border-[var(--color-brand)] bg-[var(--color-brand)]/10"
-                    : "border-[var(--color-border)] hover:border-[#33373f]"
+                    : "border-[var(--color-border)] hover:border-[#c9d0dc]"
                 }`}
               >
                 <div className="font-semibold">¥{v}</div>
@@ -89,7 +89,7 @@ export function TopupForm() {
                 className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
                   method === m.id
                     ? "border-[var(--color-brand)] bg-[var(--color-brand)]/10"
-                    : "border-[var(--color-border)] hover:border-[#33373f]"
+                    : "border-[var(--color-border)] hover:border-[#c9d0dc]"
                 }`}
               >
                 <span className="text-lg">{m.icon}</span>
@@ -136,7 +136,7 @@ export function TopupForm() {
           <button
             onClick={submit}
             disabled={busy || effective < 10}
-            className="mt-5 w-full rounded-lg bg-white py-2.5 text-sm font-medium text-black transition hover:bg-gray-200 disabled:opacity-40"
+            className="mt-5 w-full rounded-lg bg-gray-900 py-2.5 text-sm font-medium text-white transition hover:bg-gray-700 disabled:opacity-40"
           >
             {busy ? "创建订单中…" : effective < 10 ? "最低充值 ¥10" : "立即支付"}
           </button>

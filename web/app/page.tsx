@@ -40,7 +40,7 @@ export default async function Home() {
             />
             <Link
               href="/models"
-              className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-gray-200"
+              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
             >
               浏览模型
             </Link>
@@ -87,13 +87,13 @@ export default async function Home() {
               </p>
               <Link
                 href="/dashboard"
-                className="mt-6 inline-block rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-gray-200"
+                className="mt-6 inline-block rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
               >
                 获取 API Key
               </Link>
             </div>
-            <pre className="overflow-x-auto rounded-xl border border-[var(--color-border)] bg-[#0d0f13] p-5 text-sm leading-relaxed">
-              <code className="font-mono text-[var(--color-muted)]">
+            <pre className="overflow-x-auto rounded-xl bg-[#16181d] p-5 text-sm leading-relaxed">
+              <code className="font-mono text-gray-300">
 {`from openai import OpenAI
 
 client = OpenAI(

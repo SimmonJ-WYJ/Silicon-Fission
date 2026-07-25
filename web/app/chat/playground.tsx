@@ -96,12 +96,12 @@ export function Playground({ models }: { models: { id: string; name: string }[] 
             }}
             rows={1}
             placeholder="输入消息,Enter 发送…"
-            className="max-h-32 flex-1 resize-none rounded-lg border border-[var(--color-border)] bg-[var(--color-panel-2)] px-3 py-2 text-sm outline-none placeholder:text-[var(--color-faint)] focus:border-[#33373f]"
+            className="max-h-32 flex-1 resize-none rounded-lg border border-[var(--color-border)] bg-[var(--color-panel-2)] px-3 py-2 text-sm outline-none placeholder:text-[var(--color-faint)] focus:border-[#c9d0dc]"
           />
           <button
             onClick={send}
             disabled={loading}
-            className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-black hover:bg-gray-200 disabled:opacity-50"
+            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-50"
           >
             发送
           </button>

@@ -5,6 +5,7 @@ const LINKS = [
   { href: "/chat", label: "对话" },
   { href: "/rankings", label: "榜单" },
   { href: "/dashboard", label: "控制台" },
+  { href: "/admin", label: "渠道配置" },
 ];
 
 export function Nav() {
@@ -44,7 +45,7 @@ export function Nav() {
           </Link>
           <Link
             href="/topup"
-            className="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-black hover:bg-gray-200"
+            className="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-700"
           >
             充值
           </Link>
