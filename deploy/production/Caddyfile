@@ -1,0 +1,6 @@
+# Caddy 会为 DOMAIN 自动申请并续期 Let's Encrypt 证书,反代到 new-api。
+# DOMAIN 由 .env 注入(如 api.yourdomain.com)。
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy new-api:3000
+}
