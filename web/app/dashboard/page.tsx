@@ -18,9 +18,12 @@ export default function Dashboard() {
         <div className="card bg-gradient-to-br from-[var(--color-brand)]/15 to-transparent p-5">
           <div className="text-xs text-[var(--color-faint)]">账户余额</div>
           <div className="mt-1 text-3xl font-semibold">¥ 862.50</div>
-          <button className="mt-3 rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-black hover:bg-gray-200">
+          <a
+            href="/topup"
+            className="mt-3 inline-block rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-black hover:bg-gray-200"
+          >
             充值
-          </button>
+          </a>
         </div>
         <div className="card p-5">
           <div className="text-xs text-[var(--color-faint)]">本月消费</div>

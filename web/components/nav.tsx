@@ -37,13 +37,13 @@ export function Nav() {
             <kbd className="ml-6 rounded bg-[var(--color-panel-2)] px-1.5 text-xs">⌘K</kbd>
           </div>
           <Link
-            href="/dashboard"
+            href="/login"
             className="rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm hover:bg-[var(--color-panel)]"
           >
             登录
           </Link>
           <Link
-            href="/dashboard"
+            href="/topup"
             className="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-black hover:bg-gray-200"
           >
             充值
