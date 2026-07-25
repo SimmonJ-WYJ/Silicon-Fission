@@ -12,6 +12,7 @@ Silicon Fission 是一个 LLM 统一 API 网关(OpenRouter 竞品):OpenAI 兼容
 
 - **`deploy/` — 快速起站**:基于 [new-api](https://github.com/QuantumNous/new-api) 官方镜像(不改源码,规避 AGPL),一两天上线一个可对外收费的中转站,用于验证需求、跑现金流。详见 [部署指南](docs/deployment.md)。
 - **`gateway/` — 自研网关**:可闭源、可差异化、可卖给企业的长期资产。等 new-api 验证市场后再加大投入。
+- **`web/` — Web 控制台**:OpenRouter 风格的前端(Next.js + Tailwind,深色主题),模型市场 / 榜单 / Playground / 控制台,通过 API 对接后端。**这是你自己的闭源前端资产**。详见 [web/README.md](web/README.md)。
 
 ## 当前状态
 
