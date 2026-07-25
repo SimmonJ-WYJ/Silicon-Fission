@@ -5,6 +5,7 @@
 Silicon Fission 是一个 LLM 统一 API 网关(OpenRouter 竞品):OpenAI 兼容的统一入口,聚合国内外主流大模型,提供智能路由、自动容灾 fallback、统一计费与用量分析。
 
 - 📘 **功能文档(所有已实现功能总览)**:[docs/FEATURES.md](docs/FEATURES.md)
+- 🧑‍💼 **模型供应商接入指南(新人 onboarding)**:[docs/provider-onboarding.md](docs/provider-onboarding.md)
 - 🚀 快速起站部署(让中国用户不翻墙用国外模型):[docs/deployment.md](docs/deployment.md)
 - 📄 产品与技术规格:[docs/SPEC.md](docs/SPEC.md)
 - 🔍 OpenRouter 竞品分析:[docs/openrouter-analysis.md](docs/openrouter-analysis.md)
