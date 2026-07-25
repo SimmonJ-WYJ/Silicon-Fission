@@ -4,6 +4,7 @@
 
 Silicon Fission 是一个 LLM 统一 API 网关(OpenRouter 竞品):OpenAI 兼容的统一入口,聚合国内外主流大模型,提供智能路由、自动容灾 fallback、统一计费与用量分析。
 
+- 📘 **功能文档(所有已实现功能总览)**:[docs/FEATURES.md](docs/FEATURES.md)
 - 🚀 快速起站部署(让中国用户不翻墙用国外模型):[docs/deployment.md](docs/deployment.md)
 - 📄 产品与技术规格:[docs/SPEC.md](docs/SPEC.md)
 - 🔍 OpenRouter 竞品分析:[docs/openrouter-analysis.md](docs/openrouter-analysis.md)
@@ -12,7 +13,7 @@ Silicon Fission 是一个 LLM 统一 API 网关(OpenRouter 竞品):OpenAI 兼容
 
 - **`deploy/` — 快速起站**:基于 [new-api](https://github.com/QuantumNous/new-api) 官方镜像(不改源码,规避 AGPL),一两天上线一个可对外收费的中转站,用于验证需求、跑现金流。详见 [部署指南](docs/deployment.md)。
 - **`gateway/` — 自研网关**:可闭源、可差异化、可卖给企业的长期资产。等 new-api 验证市场后再加大投入。
-- **`web/` — Web 控制台**:OpenRouter 风格的前端(Next.js + Tailwind,深色主题),模型市场 / 榜单 / Playground / 控制台,通过 API 对接后端。**这是你自己的闭源前端资产**。详见 [web/README.md](web/README.md)。
+- **`web/` — Web 控制台**:OpenRouter 风格的前端(Next.js + Tailwind,白色主题),首页 / 模型市场 / 对话 Playground / 登录注册 / 控制台 / 渠道配置 / 充值,通过 API 对接后端。内置**演示模式**——不配后端也能完整体验登录到工作台的全流程。**这是你自己的闭源前端资产**。详见 [web/README.md](web/README.md) 与 [功能文档](docs/FEATURES.md)。
 
 ## 当前状态
 
