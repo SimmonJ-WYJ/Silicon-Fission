@@ -117,8 +117,14 @@ export function AuthForm() {
                 className="mt-0.5 accent-[var(--color-brand)]"
               />
               <span>
-                我已阅读并同意 <span className="text-[var(--color-brand-2)]">服务条款</span> 与{" "}
-                <span className="text-[var(--color-brand-2)]">隐私政策</span>
+                我已阅读并同意{" "}
+                <a href="/terms" target="_blank" className="text-[var(--color-brand-2)] hover:underline">
+                  服务条款
+                </a>{" "}
+                与{" "}
+                <a href="/privacy" target="_blank" className="text-[var(--color-brand-2)] hover:underline">
+                  隐私政策
+                </a>
               </span>
             </label>
           </>

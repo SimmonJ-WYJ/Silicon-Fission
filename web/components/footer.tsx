@@ -6,11 +6,11 @@ export function Footer() {
           <span className="font-medium text-[var(--color-muted)]">硅基裂变 · Silicon Fission</span>
           <span className="ml-2">统一大模型 API 网关</span>
         </div>
-        <div className="flex gap-4">
-          <span>模型</span>
-          <span>文档</span>
-          <span>定价</span>
-          <span>状态</span>
+        <div className="flex flex-wrap gap-4">
+          <a href="/models" className="hover:text-[var(--color-muted)]">模型</a>
+          <a href="/rankings" className="hover:text-[var(--color-muted)]">榜单</a>
+          <a href="/terms" className="hover:text-[var(--color-muted)]">服务条款</a>
+          <a href="/privacy" className="hover:text-[var(--color-muted)]">隐私政策</a>
         </div>
       </div>
     </footer>
