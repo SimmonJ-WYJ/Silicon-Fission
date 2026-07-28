@@ -50,6 +50,8 @@ export interface Me {
   group: string;
   quota: number;
   balanceUsd: number;
+  role: number; // 1 普通 / 10 管理员 / 100 超级管理员
+  isAdmin: boolean; // role >= 10
 }
 
 export interface ApiKeyItem {

@@ -9,6 +9,7 @@ interface SelfData {
   quota: number;
   used_quota?: number;
   group: string;
+  role?: number; // 1 普通 / 10 管理员 / 100 超级管理员
 }
 
 export async function GET() {
@@ -24,6 +25,8 @@ export async function GET() {
         group: "demo",
         quota: 2_500_000,
         balanceUsd: 5,
+        role: 100,
+        isAdmin: true,
       },
     });
   }
@@ -39,6 +42,7 @@ export async function GET() {
     return NextResponse.json({ success: false, message: body.message || "会话已过期,请重新登录" }, { status: 401 });
   }
   const u = body.data;
+  const role = typeof u.role === "number" ? u.role : 1;
   return NextResponse.json({
     success: true,
     data: {
@@ -48,6 +52,8 @@ export async function GET() {
       group: u.group,
       quota: u.quota,
       balanceUsd: Number((u.quota / QUOTA_PER_USD).toFixed(4)),
+      role,
+      isAdmin: role >= 10,
     },
   });
 }

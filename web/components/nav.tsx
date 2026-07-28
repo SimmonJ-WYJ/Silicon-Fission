@@ -7,7 +7,6 @@ const LINKS = [
   { href: "/rankings", label: "榜单" },
   { href: "/docs", label: "文档" },
   { href: "/dashboard", label: "控制台" },
-  { href: "/admin", label: "渠道配置" },
 ];
 
 export function Nav() {
