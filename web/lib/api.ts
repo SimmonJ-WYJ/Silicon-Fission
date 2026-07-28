@@ -69,6 +69,21 @@ export async function fetchMe(): Promise<Me | null> {
   return body.success ? (body.data as Me) : null;
 }
 
+/** 修改自己的账号(用户名 / 显示名 / 密码)。留空的字段不改。 */
+export async function updateSelf(input: {
+  username?: string;
+  displayName?: string;
+  password?: string;
+}): Promise<AuthResult> {
+  const res = await fetch("/api/me", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  const body = await res.json().catch(() => ({}));
+  return { ok: res.ok && body.success, message: body.message || (res.ok ? "修改成功" : "修改失败") };
+}
+
 export async function fetchKeys(): Promise<ApiKeyItem[] | null> {
   const res = await fetch("/api/keys");
   if (!res.ok) return null;

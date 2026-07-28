@@ -64,6 +64,9 @@ export function NavAuth() {
               <a href="/dashboard" className="block px-3 py-2 text-sm hover:bg-[var(--color-panel)]">
                 控制台
               </a>
+              <a href="/settings" className="block px-3 py-2 text-sm hover:bg-[var(--color-panel)]">
+                账号设置
+              </a>
               {me.group === "demo" || me.username === "root" ? (
                 <a href="/admin" className="block px-3 py-2 text-sm hover:bg-[var(--color-panel)]">
                   渠道配置
