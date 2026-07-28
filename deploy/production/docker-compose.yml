@@ -21,6 +21,7 @@ services:
       ERROR_LOG_ENABLED: "true"
       SESSION_SECRET: "${SESSION_SECRET:?}"
       SESSION_COOKIE_SECURE: "true" # 处于 HTTPS 之后
+      SESSION_COOKIE_TRUSTED_URL: "https://${DOMAIN}" # 安全 Cookie 要求声明可信域名
       # 境外模型出海代理(可选):若本机 IP 无法直连 api.openai.com,填代理地址。
       # 更推荐在后台给单个境外渠道配代理,粒度更细。
       # HTTPS_PROXY: "http://your-egress-proxy:port"
