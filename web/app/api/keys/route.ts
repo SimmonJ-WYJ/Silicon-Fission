@@ -57,7 +57,8 @@ export async function GET() {
     data: (body.data.items ?? []).map((t) => ({
       id: t.id,
       name: t.name,
-      maskedKey: `sk-${t.key}`,
+      // 只下发打码形式,完整 key 仅在创建时返回一次,之后不可再取
+      maskedKey: `sk-${t.key.slice(0, 6)}••••••${t.key.slice(-4)}`,
       enabled: t.status === 1,
       createdAt: new Date(t.created_time * 1000).toISOString().slice(0, 10),
       usedUsd: Number((t.used_quota / QUOTA_PER_USD).toFixed(4)),
@@ -78,7 +79,7 @@ export async function POST(req: Request) {
     const keys = await demoKeys();
     const id = (keys.at(-1)?.id ?? 0) + 1;
     const next: DemoKey[] = [...keys, { id, name, createdAt: new Date().toISOString().slice(0, 10) }];
-    const res = NextResponse.json({ success: true });
+    const res = NextResponse.json({ success: true, key: fakeKey(id) });
     res.cookies.set(DEMO_KEYS_COOKIE, JSON.stringify(next), COOKIE_OPTS);
     return res;
   }
@@ -98,5 +99,21 @@ export async function POST(req: Request) {
   if (!body.success) {
     return NextResponse.json({ success: false, message: body.message || "创建失败" }, { status: 400 });
   }
-  return NextResponse.json({ success: true });
+
+  // new-api 创建接口不直接返回 key,创建后拉一次列表取出刚建的这条,一次性回给前端
+  const { body: list } = await napiFetch<{ items: TokenItem[] }>(
+    "/api/token/?p=1&size=100",
+    {},
+    token,
+  ).catch(() => ({ status: 502, body: { success: false } as const }));
+
+  let fullKey: string | null = null;
+  if (list.success && list.data) {
+    const mine = (list.data.items ?? [])
+      .filter((t) => t.name === name)
+      .sort((a, b) => b.id - a.id)[0];
+    if (mine?.key) fullKey = `sk-${mine.key}`;
+  }
+
+  return NextResponse.json({ success: true, key: fullKey });
 }

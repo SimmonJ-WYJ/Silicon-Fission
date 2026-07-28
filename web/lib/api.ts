@@ -93,21 +93,19 @@ export async function fetchKeys(): Promise<ApiKeyItem[] | null> {
   return body.success ? (body.data as ApiKeyItem[]) : null;
 }
 
-export async function createKey(name: string): Promise<AuthResult> {
+/** 创建 Key。完整 key 仅在此处返回一次(res.key),之后无法再取,请提示用户立即保存。 */
+export async function createKey(name: string): Promise<AuthResult & { key?: string | null }> {
   const res = await fetch("/api/keys", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name }),
   });
   const body = await res.json().catch(() => ({}));
-  return { ok: res.ok && body.success, message: body.message || (res.ok ? "创建成功" : "创建失败") };
-}
-
-export async function revealKey(id: number): Promise<string | null> {
-  const res = await fetch(`/api/keys/${id}/reveal`, { method: "POST" });
-  if (!res.ok) return null;
-  const body = await res.json();
-  return body.success ? body.data.key : null;
+  return {
+    ok: res.ok && body.success,
+    message: body.message || (res.ok ? "创建成功" : "创建失败"),
+    key: body.key ?? null,
+  };
 }
 
 export async function fetchMyModels(): Promise<string[] | null> {

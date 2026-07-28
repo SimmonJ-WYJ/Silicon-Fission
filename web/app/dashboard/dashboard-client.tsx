@@ -6,7 +6,6 @@ import {
   fetchKeys,
   fetchMe,
   fetchMyModels,
-  revealKey,
   type ApiKeyItem,
   type Me,
 } from "@/lib/api";
@@ -18,8 +17,10 @@ export function DashboardClient() {
   const [models, setModels] = useState<string[]>([]);
   const [newKeyName, setNewKeyName] = useState("");
   const [busy, setBusy] = useState(false);
-  const [revealed, setRevealed] = useState<Record<number, string>>({});
   const [notice, setNotice] = useState<string | null>(null);
+  // 刚创建的完整 key,只在此弹窗展示一次
+  const [newKey, setNewKey] = useState<{ name: string; key: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const reload = useCallback(async () => {
     const [meRes, keysRes, modelsRes] = await Promise.all([
@@ -42,16 +43,21 @@ export function DashboardClient() {
     setBusy(true);
     setNotice(null);
     const res = await createKey(name);
-    setNotice(res.ok ? `Key「${name}」创建成功` : res.message);
+    if (res.ok && res.key) {
+      setNewKey({ name, key: res.key });
+      setCopied(false);
+    } else {
+      setNotice(res.ok ? `Key「${name}」已创建(未能取回完整 Key,请在下方列表确认)` : res.message);
+    }
     setNewKeyName("");
     await reload();
     setBusy(false);
   }
 
-  async function onReveal(id: number) {
-    const key = await revealKey(id);
-    if (key) setRevealed((r) => ({ ...r, [id]: key }));
-    else setNotice("获取完整 Key 失败");
+  async function copyNewKey() {
+    if (!newKey) return;
+    await navigator.clipboard.writeText(newKey.key);
+    setCopied(true);
   }
 
   async function onLogout() {
@@ -82,6 +88,38 @@ export function DashboardClient() {
 
   return (
     <>
+      {/* 新建 Key 后的一次性展示弹窗 */}
+      {newKey && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="card w-full max-w-lg p-6">
+            <h3 className="text-lg font-semibold">请立即保存你的 API Key</h3>
+            <p className="mt-1 text-sm text-[var(--color-amber)]">
+              出于安全考虑,完整 Key 只显示这一次。关闭后将无法再次查看,请现在复制并妥善保存。
+            </p>
+            <div className="mt-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-3">
+              <div className="text-xs text-[var(--color-faint)]">名称:{newKey.name}</div>
+              <div className="mt-1 break-all font-mono text-sm">{newKey.key}</div>
+            </div>
+            <div className="mt-4 flex items-center justify-end gap-2">
+              <button
+                onClick={copyNewKey}
+                className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700"
+              >
+                {copied ? "已复制 ✓" : "复制 Key"}
+              </button>
+              <button
+                onClick={() => setNewKey(null)}
+                disabled={!copied}
+                title={copied ? "" : "请先复制"}
+                className="rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm hover:bg-[var(--color-panel)] disabled:opacity-40"
+              >
+                我已保存,关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Account row */}
       <div className="mt-2 flex items-center justify-between text-sm text-[var(--color-muted)]">
         <span>
@@ -172,26 +210,12 @@ export function DashboardClient() {
               <tr key={k.id} className="border-t border-[var(--color-border-soft)]">
                 <td className="px-4 py-2.5">{k.name}</td>
                 <td className="px-4 py-2.5 font-mono text-xs text-[var(--color-muted)]">
-                  {revealed[k.id] ?? k.maskedKey}
+                  {k.maskedKey}
                 </td>
                 <td className="px-4 py-2.5">${k.usedUsd}</td>
                 <td className="px-4 py-2.5 text-[var(--color-muted)]">{k.createdAt}</td>
-                <td className="px-4 py-2.5 text-right">
-                  {revealed[k.id] ? (
-                    <button
-                      onClick={() => navigator.clipboard.writeText(revealed[k.id])}
-                      className="text-xs text-[var(--color-brand-2)] hover:underline"
-                    >
-                      复制
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => onReveal(k.id)}
-                      className="text-xs text-[var(--color-muted)] hover:text-[var(--color-text)]"
-                    >
-                      查看完整 Key
-                    </button>
-                  )}
+                <td className="px-4 py-2.5 text-right text-xs text-[var(--color-faint)]">
+                  仅创建时可见
                 </td>
               </tr>
             ))}
