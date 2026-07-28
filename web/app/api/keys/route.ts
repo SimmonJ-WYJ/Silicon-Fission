@@ -57,8 +57,8 @@ export async function GET() {
     data: (body.data.items ?? []).map((t) => ({
       id: t.id,
       name: t.name,
-      // 只下发打码形式,完整 key 仅在创建时返回一次,之后不可再取
-      maskedKey: `sk-${t.key.slice(0, 6)}••••••${t.key.slice(-4)}`,
+      // 只下发打码形式:洗掉 new-api 自带的 * 打码,统一用圆点。完整 key 仅创建时返回一次。
+      maskedKey: `sk-${t.key.replace(/[^a-zA-Z0-9]/g, "").slice(0, 6)}${"•".repeat(8)}`,
       enabled: t.status === 1,
       createdAt: new Date(t.created_time * 1000).toISOString().slice(0, 10),
       usedUsd: Number((t.used_quota / QUOTA_PER_USD).toFixed(4)),
@@ -100,7 +100,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, message: body.message || "创建失败" }, { status: 400 });
   }
 
-  // new-api 创建接口不直接返回 key,创建后拉一次列表取出刚建的这条,一次性回给前端
+  // new-api 创建接口不直接返回 key,且列表里的 key 是打码的。
+  // 因此:先从列表定位刚建的这条拿到 id,再用专门的取 key 接口拿完整 key,一次性回给前端。
   const { body: list } = await napiFetch<{ items: TokenItem[] }>(
     "/api/token/?p=1&size=100",
     {},
@@ -112,7 +113,17 @@ export async function POST(req: Request) {
     const mine = (list.data.items ?? [])
       .filter((t) => t.name === name)
       .sort((a, b) => b.id - a.id)[0];
-    if (mine?.key) fullKey = `sk-${mine.key}`;
+    if (mine?.id) {
+      const { body: keyBody } = await napiFetch<{ key?: string } | string>(
+        `/api/token/${mine.id}/key`,
+        { method: "POST" },
+        token,
+      ).catch(() => ({ status: 502, body: { success: false } as const }));
+      if (keyBody.success) {
+        const raw = typeof keyBody.data === "string" ? keyBody.data : keyBody.data?.key;
+        if (raw) fullKey = raw.startsWith("sk-") ? raw : `sk-${raw}`;
+      }
+    }
   }
 
   return NextResponse.json({ success: true, key: fullKey });
