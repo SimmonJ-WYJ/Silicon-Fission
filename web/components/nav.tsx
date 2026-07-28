@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NavAuth } from "./nav-auth";
 
 const LINKS = [
   { href: "/models", label: "模型" },
@@ -38,18 +39,7 @@ export function Nav() {
             <span>搜索模型…</span>
             <kbd className="ml-6 rounded bg-[var(--color-panel-2)] px-1.5 text-xs">⌘K</kbd>
           </div>
-          <Link
-            href="/login"
-            className="rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm hover:bg-[var(--color-panel)]"
-          >
-            登录
-          </Link>
-          <Link
-            href="/topup"
-            className="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-700"
-          >
-            充值
-          </Link>
+          <NavAuth />
         </div>
       </div>
     </header>
