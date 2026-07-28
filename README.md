@@ -4,6 +4,15 @@
 
 Silicon Fission 是一个 LLM 统一 API 网关(OpenRouter 竞品):OpenAI 兼容的统一入口,聚合国内外主流大模型,提供智能路由、自动容灾 fallback、统一计费与用量分析。
 
+## 访问地址
+
+| 用途 | 地址 |
+|---|---|
+| 🌐 官网 / 用户控制台(前台) | https://siliconfission.com |
+| 🔌 API 网关 / 管理后台(new-api) | https://api.siliconfission.com |
+
+> 前台部署在 Vercel(自动 HTTPS),后端 new-api 部署在 VPS(Caddy 自动 HTTPS)。`www.siliconfission.com` 会 308 跳转到主域名。旧地址 `silicon-fission.vercel.app` 仍可用。
+
 - 🚦 **正式上线手册(Vercel + VPS 生产部署)**:[docs/go-live.md](docs/go-live.md)
 - 📘 **功能文档(所有已实现功能总览)**:[docs/FEATURES.md](docs/FEATURES.md)
 - 🧑‍💼 **模型供应商接入指南(新人 onboarding)**:[docs/provider-onboarding.md](docs/provider-onboarding.md)
