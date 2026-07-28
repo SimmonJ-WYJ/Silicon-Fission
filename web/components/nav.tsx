@@ -4,6 +4,7 @@ const LINKS = [
   { href: "/models", label: "模型" },
   { href: "/chat", label: "对话" },
   { href: "/rankings", label: "榜单" },
+  { href: "/docs", label: "文档" },
   { href: "/dashboard", label: "控制台" },
   { href: "/admin", label: "渠道配置" },
 ];
