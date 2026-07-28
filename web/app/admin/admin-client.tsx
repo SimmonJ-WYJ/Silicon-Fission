@@ -3,6 +3,20 @@
 import { useCallback, useEffect, useState } from "react";
 import { fetchMe, type Me } from "@/lib/api";
 
+interface AdminUser {
+  id: number;
+  username: string;
+  displayName: string;
+  role: number;
+  roleLabel: string;
+  isAdmin: boolean;
+  enabled: boolean;
+  email: string;
+  group: string;
+  balanceUsd: number;
+  usedUsd: number;
+}
+
 interface Channel {
   id: number;
   name: string;
@@ -28,6 +42,7 @@ export function AdminClient() {
   const [status, setStatus] = useState<Status>("loading");
   const [me, setMe] = useState<Me | null>(null);
   const [channels, setChannels] = useState<Channel[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -72,8 +87,29 @@ export function AdminClient() {
       const body = await chRes.json().catch(() => null);
       setNotice({ ok: false, text: body?.message || "当前账号无管理员权限,仅管理员可配置渠道" });
     }
+    // 4. 拉用户列表
+    const uRes = await fetch("/api/admin/users");
+    if (uRes.ok) {
+      const body = await uRes.json();
+      setUsers(body.data ?? []);
+    } else {
+      setUsers([]);
+    }
     setStatus("ready");
   }, []);
+
+  async function manageUser(id: number, action: string, label: string) {
+    if (action === "delete" && !confirm(`确定删除用户「${label}」?此操作不可恢复。`)) return;
+    setNotice(null);
+    const res = await fetch("/api/admin/users/manage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, action }),
+    });
+    const body = await res.json().catch(() => ({}));
+    setNotice({ ok: res.ok && body.success, text: body.message || (res.ok ? "操作成功" : "操作失败") });
+    if (res.ok && body.success) await detect();
+  }
 
   useEffect(() => {
     detect();
@@ -246,8 +282,93 @@ docker compose ps   # 等待 running 状态`}
         </div>
       )}
 
+      {/* 用户管理 */}
+      <h2 className="mt-8 text-lg font-semibold">
+        用户管理(共 {users.length} 人 · 管理员 {users.filter((u) => u.isAdmin).length} 人)
+      </h2>
+      <div className="mt-3 overflow-hidden rounded-xl border border-[var(--color-border)]">
+        <table className="w-full text-sm">
+          <thead className="bg-[var(--color-panel)] text-left text-[var(--color-faint)]">
+            <tr>
+              <th className="px-4 py-2 font-medium">用户名</th>
+              <th className="px-4 py-2 font-medium">角色</th>
+              <th className="px-4 py-2 font-medium">余额</th>
+              <th className="px-4 py-2 font-medium">已用</th>
+              <th className="px-4 py-2 font-medium">状态</th>
+              <th className="px-4 py-2 font-medium">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-4 py-8 text-center text-[var(--color-faint)]">
+                  暂无用户
+                </td>
+              </tr>
+            )}
+            {users.map((u) => (
+              <tr key={u.id} className="border-t border-[var(--color-border-soft)]">
+                <td className="px-4 py-2.5">
+                  {u.displayName}
+                  <span className="ml-1 text-xs text-[var(--color-faint)]">@{u.username}</span>
+                </td>
+                <td className="px-4 py-2.5">
+                  <span
+                    className={
+                      u.role >= 100
+                        ? "text-[var(--color-brand)]"
+                        : u.role >= 10
+                          ? "text-[var(--color-brand-2)]"
+                          : "text-[var(--color-muted)]"
+                    }
+                  >
+                    {u.roleLabel}
+                  </span>
+                </td>
+                <td className="px-4 py-2.5">${u.balanceUsd}</td>
+                <td className="px-4 py-2.5 text-[var(--color-muted)]">${u.usedUsd}</td>
+                <td className="px-4 py-2.5">
+                  <span className={u.enabled ? "text-[var(--color-green)]" : "text-[var(--color-amber)]"}>
+                    {u.enabled ? "正常" : "已禁用"}
+                  </span>
+                </td>
+                <td className="px-4 py-2.5">
+                  {u.role >= 100 ? (
+                    <span className="text-xs text-[var(--color-faint)]">超管不可操作</span>
+                  ) : (
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {u.isAdmin ? (
+                        <button onClick={() => manageUser(u.id, "demote", u.username)} className="text-[var(--color-muted)] hover:text-[var(--color-text)]">
+                          降为普通
+                        </button>
+                      ) : (
+                        <button onClick={() => manageUser(u.id, "promote", u.username)} className="text-[var(--color-brand-2)] hover:underline">
+                          设为管理员
+                        </button>
+                      )}
+                      {u.enabled ? (
+                        <button onClick={() => manageUser(u.id, "disable", u.username)} className="text-[var(--color-amber)] hover:underline">
+                          禁用
+                        </button>
+                      ) : (
+                        <button onClick={() => manageUser(u.id, "enable", u.username)} className="text-[var(--color-green)] hover:underline">
+                          启用
+                        </button>
+                      )}
+                      <button onClick={() => manageUser(u.id, "delete", u.username)} className="text-[var(--color-faint)] hover:text-[var(--color-amber)]">
+                        删除
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
       {/* 已接入渠道 */}
-      <h2 className="mt-8 text-lg font-semibold">已接入渠道({channels.length})</h2>
+      <h2 className="mt-10 text-lg font-semibold">已接入渠道({channels.length})</h2>
       <div className="mt-3 overflow-hidden rounded-xl border border-[var(--color-border)]">
         <table className="w-full text-sm">
           <thead className="bg-[var(--color-panel)] text-left text-[var(--color-faint)]">
