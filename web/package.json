@@ -2,12 +2,14 @@
   "name": "@silicon-fission/web",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "description": "Silicon Fission web console — OpenRouter-style model marketplace, playground and dashboard",
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "node --test lib/*.test.ts"
   },
   "dependencies": {
     "next": "^16.2.11",

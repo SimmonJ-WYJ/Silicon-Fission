@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionToken, napiFetch } from "@/lib/newapi-server";
+import { channelTypeForProtocol, parseChannelProtocol } from "@/lib/channel-protocol";
 import {
   isDemo,
   demoUser,
@@ -61,9 +62,13 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const { name, baseUrl, key, models } = await req.json().catch(() => ({}));
+  const { name, baseUrl, key, models, protocol } = await req.json().catch(() => ({}));
   if (!name || !key || !models) {
     return NextResponse.json({ success: false, message: "名称、Key、模型均必填" }, { status: 400 });
+  }
+  const channelProtocol = parseChannelProtocol(protocol);
+  if (!channelProtocol) {
+    return NextResponse.json({ success: false, message: "不支持的渠道协议" }, { status: 400 });
   }
 
   if (isDemo()) {
@@ -91,7 +96,7 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           mode: "single",
           channel: {
-            type: 1,
+            type: channelTypeForProtocol(channelProtocol),
             name,
             key,
             base_url: baseUrl || "",

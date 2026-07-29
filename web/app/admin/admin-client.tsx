@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { fetchMe, type Me } from "@/lib/api";
+import type { ChannelProtocol } from "@/lib/channel-protocol";
 
 interface AdminUser {
   id: number;
@@ -27,14 +28,21 @@ interface Channel {
   responseTimeMs: number;
 }
 
-// 常用上游预设:选中后自动填 base_url 和推荐模型(均为 OpenAI 兼容协议)
+// 常用上游预设:选中后自动填协议、base_url 和推荐模型
 const PRESETS = [
-  { id: "deepseek", label: "DeepSeek", baseUrl: "https://api.deepseek.com", models: "deepseek-chat,deepseek-reasoner" },
-  { id: "siliconflow", label: "SiliconFlow 硅基流动", baseUrl: "https://api.siliconflow.cn", models: "deepseek-ai/DeepSeek-V3,Qwen/Qwen2.5-72B-Instruct" },
-  { id: "moonshot", label: "Moonshot Kimi", baseUrl: "https://api.moonshot.cn", models: "moonshot-v1-8k,kimi-k2-0711-preview" },
-  { id: "openai", label: "OpenAI(需出海线路)", baseUrl: "https://api.openai.com", models: "gpt-4o,gpt-4o-mini" },
-  { id: "custom", label: "自定义(OpenAI 兼容)", baseUrl: "", models: "" },
-] as const;
+  { id: "deepseek", label: "DeepSeek", protocol: "openai", baseUrl: "https://api.deepseek.com", models: "deepseek-chat,deepseek-reasoner" },
+  { id: "siliconflow", label: "SiliconFlow 硅基流动", protocol: "openai", baseUrl: "https://api.siliconflow.cn", models: "deepseek-ai/DeepSeek-V3,Qwen/Qwen2.5-72B-Instruct" },
+  { id: "moonshot", label: "Moonshot Kimi", protocol: "openai", baseUrl: "https://api.moonshot.cn", models: "moonshot-v1-8k,kimi-k2-0711-preview" },
+  { id: "openai", label: "OpenAI(需出海线路)", protocol: "openai", baseUrl: "https://api.openai.com", models: "gpt-4o,gpt-4o-mini" },
+  { id: "custom", label: "自定义(OpenAI 兼容)", protocol: "openai", baseUrl: "", models: "" },
+  { id: "anthropic", label: "Claude / Anthropic", protocol: "anthropic", baseUrl: "", models: "" },
+] as const satisfies readonly {
+  id: string;
+  label: string;
+  protocol: ChannelProtocol;
+  baseUrl: string;
+  models: string;
+}[];
 
 type Status = "loading" | "offline" | "uninitialized" | "unauthed" | "ready";
 
@@ -118,7 +126,7 @@ export function AdminClient() {
   function applyPreset(id: (typeof PRESETS)[number]["id"]) {
     const p = PRESETS.find((x) => x.id === id)!;
     setPreset(id);
-    setChName(p.label.split("(")[0].split(" ")[0]);
+    setChName(p.id === "anthropic" ? p.label : p.label.split("(")[0].split(" ")[0]);
     setChBase(p.baseUrl);
     setChModels(p.models);
   }
@@ -157,10 +165,17 @@ export function AdminClient() {
     e.preventDefault();
     setBusy(true);
     setNotice(null);
+    const activePreset = PRESETS.find((p) => p.id === preset)!;
     const res = await fetch("/api/admin/channels", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: chName.trim(), baseUrl: chBase.trim(), key: chKey.trim(), models: chModels.trim() }),
+      body: JSON.stringify({
+        name: chName.trim(),
+        baseUrl: chBase.trim(),
+        key: chKey.trim(),
+        models: chModels.trim(),
+        protocol: activePreset.protocol,
+      }),
     });
     const body = await res.json().catch(() => ({}));
     setNotice({
