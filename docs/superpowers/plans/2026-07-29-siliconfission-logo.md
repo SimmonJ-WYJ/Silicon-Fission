@@ -30,15 +30,15 @@
 - Icon-only mark uses a tight square-ish `viewBox`.
 - All shapes use path/rect geometry and the wordmark uses deterministic SVG paths or a self-contained geometric text treatment.
 
-- [ ] **Step 1: Build the original fracture-routing mark**
+- [x] **Step 1: Build the original fracture-routing mark**
 
 Construct two offset rounded modules joined by a narrow bridge. Use `#6D4AFF`, no stroke, no gradient, and a transparent background. Confirm the silhouette is distinct from the two-block SiliconFlow reference.
 
-- [ ] **Step 2: Build light and dark horizontal wordmarks**
+- [x] **Step 2: Build light and dark horizontal wordmarks**
 
 Use the exact text `SiliconFission`; the light version uses `#171A20`, the dark version uses white. Keep identical spacing and geometry between variants.
 
-- [ ] **Step 3: Validate SVG structure**
+- [x] **Step 3: Validate SVG structure**
 
 Run an XML parse check and search each file for `<image`, external URLs, and background rectangles. Expected: valid XML, no external assets, no opaque canvas background.
 
@@ -52,7 +52,7 @@ Run an XML parse check and search each file for `<image`, external URLs, and bac
 - Mobile renders `/brand/siliconfission-mark.svg`.
 - `sm` and wider renders `/brand/siliconfission-logo.svg`.
 
-- [ ] **Step 1: Replace the temporary badge**
+- [x] **Step 1: Replace the temporary badge**
 
 Replace the `裂` gradient square and text span with:
 
@@ -63,7 +63,7 @@ Replace the `裂` gradient square and text span with:
 
 Do not change global navigation links or auth controls.
 
-- [ ] **Step 2: Run TypeScript and production build**
+- [x] **Step 2: Run TypeScript and production build**
 
 Run `npx tsc --noEmit` and `npm run build` in `web`. Expected: both exit `0`.
 
@@ -76,18 +76,18 @@ Run `npx tsc --noEmit` and `npm run build` in `web`. Expected: both exit `0`.
 **Interfaces:**
 - No new runtime interface.
 
-- [ ] **Step 1: Inspect SVG previews**
+- [x] **Step 1: Inspect SVG previews**
 
 Render all three assets and confirm: transparent background, exact wordmark, clear 28-pixel header rendering, and distinct mark silhouette.
 
-- [ ] **Step 2: Inspect desktop and mobile header**
+- [x] **Step 2: Inspect desktop and mobile header**
 
 Open the local site at desktop and 390-pixel widths. Confirm full logo at desktop, icon-only at mobile, no header overflow, and the home link remains functional.
 
-- [ ] **Step 3: Review final diff**
+- [x] **Step 3: Review final diff**
 
 Run `git diff --check`; confirm only logo assets, header markup, and documentation changed.
 
-- [ ] **Step 4: Commit and push**
+- [x] **Step 4: Commit and push**
 
 Commit with message `Add SiliconFission logo`, push `main` to `origin/main`, fetch, and verify local `HEAD` equals `origin/main`.

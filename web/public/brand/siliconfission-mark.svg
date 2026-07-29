@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="3 3 42 42" role="img" aria-labelledby="title">
+  <title id="title">SiliconFission</title>
+  <g fill="#6D4AFF">
+    <path d="M5 9a4 4 0 0 1 4-4h18a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H17l-4 4H9a4 4 0 0 1-4-4V9Z"/>
+    <path d="M17 31a4 4 0 0 1 4-4h10l4-4h4a4 4 0 0 1 4 4v12a4 4 0 0 1-4 4H21a4 4 0 0 1-4-4v-8Z"/>
+    <path d="M27 17h4l7 7-4 4-7-7v-4Z" opacity=".78"/>
+  </g>
+</svg>

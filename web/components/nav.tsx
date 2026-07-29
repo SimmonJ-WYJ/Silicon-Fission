@@ -13,11 +13,9 @@ export function Nav() {
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--color-border-soft)] bg-[var(--color-bg)]/80 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4 sm:px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br from-[var(--color-brand)] to-[var(--color-brand-2)] text-sm text-white">
-            裂
-          </span>
-          <span className="hidden sm:inline">硅基裂变</span>
+        <Link href="/" className="flex shrink-0 items-center" aria-label="SiliconFission 首页">
+          <img src="/brand/siliconfission-mark.svg" alt="SiliconFission" className="h-7 w-auto sm:hidden" />
+          <img src="/brand/siliconfission-logo.svg" alt="SiliconFission" className="hidden h-7 w-auto sm:block" />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
