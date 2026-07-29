@@ -168,7 +168,7 @@ export function DashboardClient() {
       )}
 
       {/* API keys */}
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+      <div id="api-keys" className="mt-8 flex scroll-mt-24 flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">API Keys</h2>
         <div className="flex items-center gap-2">
           <input

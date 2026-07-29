@@ -32,7 +32,7 @@
 - Produces: `isConsoleItemActive(item: ConsoleNavItem, pathname: string, hash: string): boolean`.
 - Consumes: no React or browser globals.
 
-- [ ] **Step 1: Write failing navigation tests**
+- [x] **Step 1: Write failing navigation tests**
 
 Test the exact information architecture, normal/admin visibility, exact pathname matching, Overview behavior on `/dashboard`, and API Keys behavior on `/dashboard#api-keys`:
 
@@ -67,15 +67,15 @@ test("distinguishes overview from the API Keys hash", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests and verify RED**
+- [x] **Step 2: Run tests and verify RED**
 
 Run `npm test` in `web`. Expected: FAIL because `console-navigation.ts` does not exist.
 
-- [ ] **Step 3: Implement the minimal navigation model**
+- [x] **Step 3: Implement the minimal navigation model**
 
 Define the three sections and active-state rules. Mark the administration section or item with `adminOnly: true`; do not include unfinished OpenRouter destinations. Hash matching must normalize both `api-keys` and `#api-keys` to `#api-keys`.
 
-- [ ] **Step 4: Run tests and verify GREEN**
+- [x] **Step 4: Run tests and verify GREEN**
 
 Run `npm test` in `web`. Expected: all protocol, channel mutation, and console navigation tests pass with zero failures.
 
@@ -92,7 +92,7 @@ Run `npm test` in `web`. Expected: all protocol, channel mutation, and console n
 - `ConsoleShell({ children }: { children: React.ReactNode })` produces the desktop grid and mobile menu region.
 - Sidebar icon keys map to small inline semantic icons with `aria-hidden="true"`; links retain visible text labels.
 
-- [ ] **Step 1: Implement the sidebar state boundary**
+- [x] **Step 1: Implement the sidebar state boundary**
 
 Create a client component that:
 
@@ -118,7 +118,7 @@ useEffect(() => {
 
 Close the mobile drawer when a link is selected. Use the approved Chinese labels and section grouping.
 
-- [ ] **Step 2: Implement desktop and mobile presentation**
+- [x] **Step 2: Implement desktop and mobile presentation**
 
 Desktop sidebar requirements:
 
@@ -132,7 +132,7 @@ Mobile requirements:
 - Backdrop plus left drawer with `role="dialog"`, `aria-modal="true"`, and `aria-label="控制台导航"`.
 - A visible close button and backdrop click dismissal.
 
-- [ ] **Step 3: Implement the shared shell**
+- [x] **Step 3: Implement the shared shell**
 
 `ConsoleShell` renders `ConsoleSidebar` once; that component supplies the desktop sidebar plus the mobile button and drawer:
 
@@ -147,7 +147,7 @@ Mobile requirements:
 
 Keep drawer state inside one component boundary so desktop and mobile navigation use the same items and active logic.
 
-- [ ] **Step 4: Run TypeScript verification**
+- [x] **Step 4: Run TypeScript verification**
 
 Run `npx tsc --noEmit` in `web`. Expected: exit `0`.
 
@@ -163,7 +163,7 @@ Run `npx tsc --noEmit` in `web`. Expected: exit `0`.
 - Public URLs remain identical because parenthesized route groups do not contribute URL segments.
 - The dashboard API Keys heading container exposes `id="api-keys"`.
 
-- [ ] **Step 1: Add the route-group layout**
+- [x] **Step 1: Add the route-group layout**
 
 Create:
 
@@ -175,7 +175,7 @@ export default function ConsoleLayout({ children }: { children: React.ReactNode 
 }
 ```
 
-- [ ] **Step 2: Move console route directories into the group**
+- [x] **Step 2: Move console route directories into the group**
 
 Move the seven directories as a single mechanical change. Do not modify imports unless TypeScript reports a path that is not alias-based. Confirm these files now exist:
 
@@ -189,7 +189,7 @@ web/app/(console)/settings/page.tsx
 web/app/(console)/admin/page.tsx
 ```
 
-- [ ] **Step 3: Add the API Keys anchor**
+- [x] **Step 3: Add the API Keys anchor**
 
 Change the existing API Keys section wrapper to:
 
@@ -199,7 +199,7 @@ Change the existing API Keys section wrapper to:
 
 Keep all form and table behavior unchanged.
 
-- [ ] **Step 4: Verify route compilation**
+- [x] **Step 4: Verify route compilation**
 
 Run `npx tsc --noEmit` and `npm run build` in `web`. Expected: both exit `0`; the build route list still contains `/dashboard`, `/models`, `/chat`, `/docs`, `/topup`, `/settings`, and `/admin` without a `/console` prefix.
 
@@ -213,15 +213,15 @@ Run `npx tsc --noEmit` and `npm run build` in `web`. Expected: both exit `0`; th
 - No new production interface.
 - Verifies accessibility, permission visibility, URL preservation, and regression safety.
 
-- [ ] **Step 1: Run the full automated suite**
+- [x] **Step 1: Run the full automated suite**
 
 Run `npm test` in `web`. Expected: all tests pass with zero failures.
 
-- [ ] **Step 2: Run compiler and production build**
+- [x] **Step 2: Run compiler and production build**
 
 Run `npx tsc --noEmit` and `npm run build` in `web`. Expected: both exit `0`.
 
-- [ ] **Step 3: Verify representative pages in a local browser**
+- [x] **Step 3: Verify representative pages in a local browser**
 
 Start the app and inspect `/dashboard`, `/dashboard#api-keys`, `/models`, `/chat`, `/settings`, and `/admin` at desktop and mobile widths. Confirm:
 
@@ -231,10 +231,10 @@ Start the app and inspect `/dashboard`, `/dashboard#api-keys`, `/models`, `/chat
 - Standard users do not see Channel Configuration; administrators do.
 - Existing page controls remain usable.
 
-- [ ] **Step 4: Review the final diff**
+- [x] **Step 4: Review the final diff**
 
 Run `git diff --check`, inspect all route moves, and confirm no API, authentication, billing, key, model, chat, or channel mutation logic changed except the API Keys anchor attribute.
 
-- [ ] **Step 5: Commit and push**
+- [x] **Step 5: Commit and push**
 
 Commit implementation and plan with message `Add unified console sidebar`, push `main` to `origin/main`, fetch, and verify local `HEAD` equals `origin/main`.
