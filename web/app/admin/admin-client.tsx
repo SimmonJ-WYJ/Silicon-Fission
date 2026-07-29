@@ -54,6 +54,18 @@ export function AdminClient() {
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // 渠道编辑 / 删除
+  const [editingChannel, setEditingChannel] = useState<Channel | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editBase, setEditBase] = useState("");
+  const [editModels, setEditModels] = useState("");
+  const [editEnabled, setEditEnabled] = useState(true);
+  const [editKey, setEditKey] = useState("");
+  const [editError, setEditError] = useState<string | null>(null);
+  const [deletingChannel, setDeletingChannel] = useState<Channel | null>(null);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   // 初始化表单
   const [initUser, setInitUser] = useState("root");
   const [initPass, setInitPass] = useState("");
@@ -194,6 +206,101 @@ export function AdminClient() {
     const res = await fetch(`/api/admin/channels/${id}/test`, { method: "POST" });
     const body = await res.json().catch(() => ({}));
     setNotice({ ok: Boolean(body.success), text: body.message || "测试完成" });
+  }
+
+  function openEditChannel(channel: Channel) {
+    setEditingChannel(channel);
+    setEditName(channel.name);
+    setEditBase(channel.baseUrl);
+    setEditModels(channel.models);
+    setEditEnabled(channel.enabled);
+    setEditKey("");
+    setEditError(null);
+  }
+
+  function closeEditChannel() {
+    setEditingChannel(null);
+    setEditKey("");
+    setEditError(null);
+  }
+
+  async function updateChannel(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingChannel) return;
+    setBusy(true);
+    setNotice(null);
+    setEditError(null);
+    try {
+      const res = await fetch(`/api/admin/channels/${editingChannel.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: editName.trim(),
+          baseUrl: editBase.trim(),
+          models: editModels.trim(),
+          enabled: editEnabled,
+          key: editKey.trim(),
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+      const ok = res.ok && body.success;
+      const message = ok ? `渠道「${editName.trim()}」已更新` : body.message || "更新失败";
+      setNotice({ ok, text: message });
+      if (!ok) {
+        setEditError(message);
+        return;
+      }
+      closeEditChannel();
+      await detect();
+    } catch {
+      const message = "网络错误，无法更新渠道";
+      setEditError(message);
+      setNotice({ ok: false, text: message });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function openDeleteChannel(channel: Channel) {
+    setDeletingChannel(channel);
+    setDeleteConfirmName("");
+    setDeleteError(null);
+  }
+
+  function closeDeleteChannel() {
+    setDeletingChannel(null);
+    setDeleteConfirmName("");
+    setDeleteError(null);
+  }
+
+  async function deleteChannel() {
+    if (!deletingChannel || deleteConfirmName !== deletingChannel.name) return;
+    setBusy(true);
+    setNotice(null);
+    setDeleteError(null);
+    try {
+      const res = await fetch(`/api/admin/channels/${deletingChannel.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmName: deleteConfirmName }),
+      });
+      const body = await res.json().catch(() => ({}));
+      const ok = res.ok && body.success;
+      const message = ok ? `渠道「${deletingChannel.name}」已删除` : body.message || "删除失败";
+      setNotice({ ok, text: message });
+      if (!ok) {
+        setDeleteError(message);
+        return;
+      }
+      closeDeleteChannel();
+      await detect();
+    } catch {
+      const message = "网络错误，无法删除渠道";
+      setDeleteError(message);
+      setNotice({ ok: false, text: message });
+    } finally {
+      setBusy(false);
+    }
   }
 
   /* ---------- 渲染各状态 ---------- */
@@ -414,9 +521,17 @@ docker compose ps   # 等待 running 状态`}
                   </span>
                 </td>
                 <td className="px-4 py-2.5 text-right">
-                  <button onClick={() => testChannel(c.id)} className="text-xs text-[var(--color-brand-2)] hover:underline">
-                    测试连通
-                  </button>
+                  <div className="flex justify-end gap-3 text-xs">
+                    <button onClick={() => testChannel(c.id)} className="text-[var(--color-brand-2)] hover:underline">
+                      测试连通
+                    </button>
+                    <button onClick={() => openEditChannel(c)} className="text-[var(--color-muted)] hover:text-[var(--color-text)]">
+                      编辑
+                    </button>
+                    <button onClick={() => openDeleteChannel(c)} className="text-red-500 hover:text-red-600">
+                      删除
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -497,6 +612,113 @@ docker compose ps   # 等待 running 状态`}
         配好渠道后:去 <a href="/dashboard" className="text-[var(--color-brand-2)]">控制台</a> 创建
         sk- Key → 在 <a href="/chat" className="text-[var(--color-brand-2)]">对话</a> 里选模型即可使用。
       </p>
+
+      {editingChannel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-labelledby="edit-channel-title">
+          <form onSubmit={updateChannel} className="w-full max-w-xl space-y-4 rounded-2xl bg-[var(--color-bg)] p-6 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <h2 id="edit-channel-title" className="text-lg font-semibold">编辑渠道</h2>
+              <button type="button" disabled={busy} onClick={closeEditChannel} className="text-[var(--color-muted)] hover:text-[var(--color-text)] disabled:opacity-40">
+                关闭
+              </button>
+            </div>
+            <div>
+              <label className="text-xs text-[var(--color-faint)]">渠道名称</label>
+              <input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 text-sm outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-[var(--color-faint)]">上游 Base URL(留空用官方)</label>
+              <input
+                value={editBase}
+                onChange={(e) => setEditBase(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 font-mono text-xs outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-[var(--color-faint)]">开放的模型(逗号分隔)</label>
+              <input
+                value={editModels}
+                onChange={(e) => setEditModels(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 font-mono text-xs outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-[var(--color-faint)]">新上游 API Key(可选)</label>
+              <input
+                type="password"
+                value={editKey}
+                onChange={(e) => setEditKey(e.target.value)}
+                autoComplete="new-password"
+                placeholder="留空表示保持现有 Key"
+                className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 font-mono text-xs outline-none"
+              />
+              <p className="mt-1 text-xs text-[var(--color-faint)]">留空表示保持现有 Key；填写后将替换旧 Key。</p>
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={editEnabled} onChange={(e) => setEditEnabled(e.target.checked)} />
+              启用此渠道
+            </label>
+            {editError && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{editError}</p>}
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" disabled={busy} onClick={closeEditChannel} className="rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm disabled:opacity-40">
+                取消
+              </button>
+              <button
+                type="submit"
+                disabled={busy || !editName.trim() || !editModels.trim()}
+                className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-40"
+              >
+                {busy ? "保存中…" : "保存更改"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {deletingChannel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-labelledby="delete-channel-title">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void deleteChannel();
+            }}
+            className="w-full max-w-md space-y-4 rounded-2xl bg-[var(--color-bg)] p-6 shadow-2xl"
+          >
+            <h2 id="delete-channel-title" className="text-lg font-semibold text-red-600">永久删除渠道</h2>
+            <p className="text-sm text-[var(--color-muted)]">
+              删除后不可恢复，模型 <span className="font-mono text-[var(--color-text)]">{deletingChannel.models}</span> 可能立即无法调用。
+            </p>
+            <div>
+              <label className="text-xs text-[var(--color-faint)]">
+                输入渠道名称 <span className="font-mono text-[var(--color-text)]">{deletingChannel.name}</span> 以确认
+              </label>
+              <input
+                value={deleteConfirmName}
+                onChange={(e) => setDeleteConfirmName(e.target.value)}
+                autoComplete="off"
+                className="mt-1 w-full rounded-lg border border-red-300 bg-[var(--color-panel)] px-3 py-2.5 text-sm outline-none"
+              />
+            </div>
+            {deleteError && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{deleteError}</p>}
+            <div className="flex justify-end gap-3 pt-2">
+              <button type="button" disabled={busy} onClick={closeDeleteChannel} className="rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm disabled:opacity-40">
+                取消
+              </button>
+              <button
+                type="submit"
+                disabled={busy || deleteConfirmName !== deletingChannel.name}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-40"
+              >
+                {busy ? "删除中…" : "永久删除"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </>
   );
 }
