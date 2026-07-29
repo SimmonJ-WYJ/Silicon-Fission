@@ -26,7 +26,7 @@
 - Consumes: existing `Nav` component markup and Tailwind breakpoints.
 - Produces: a full-width header content row with responsive viewport padding.
 
-- [ ] **Step 1: Verify the current source does not implement the approved spacing**
+- [x] **Step 1: Verify the current source does not implement the approved spacing**
 
 Run:
 
@@ -36,7 +36,7 @@ rg 'flex h-14 w-full.*px-4.*sm:px-6.*lg:px-14' web/components/nav.tsx
 
 Expected: exit `1`, because the current container still uses `max-w-7xl`.
 
-- [ ] **Step 2: Replace the container classes**
+- [x] **Step 2: Replace the container classes**
 
 Change the inner header container to:
 
@@ -46,7 +46,7 @@ Change the inner header container to:
 
 Do not change any child elements.
 
-- [ ] **Step 3: Verify the source contract**
+- [x] **Step 3: Verify the source contract**
 
 Run the command from Step 1 again. Expected: one match and exit `0`. Also run `git diff --check`.
 
@@ -59,7 +59,7 @@ Run the command from Step 1 again. Expected: one match and exit `0`. Also run `g
 **Interfaces:**
 - No new runtime interface.
 
-- [ ] **Step 1: Run automated verification**
+- [x] **Step 1: Run automated verification**
 
 Run in `web`:
 
@@ -71,11 +71,11 @@ npm run build
 
 Expected: all commands exit `0`.
 
-- [ ] **Step 2: Measure desktop and mobile layouts**
+- [x] **Step 2: Measure desktop and mobile layouts**
 
 At a 1440px viewport, confirm the header content container's left and right padding are both `56px`. At 390px, confirm both are `16px` and header horizontal overflow equals `0`.
 
-- [ ] **Step 3: Review and commit**
+- [x] **Step 3: Review and commit**
 
 Run `git diff --check`, confirm only the navigation class and plan checkbox state changed, then commit with:
 
@@ -84,6 +84,6 @@ git add web/components/nav.tsx docs/superpowers/plans/2026-07-29-header-edge-spa
 git commit -m "Adjust header edge spacing"
 ```
 
-- [ ] **Step 4: Push and verify synchronization**
+- [x] **Step 4: Push and verify synchronization**
 
 Push `main` to `origin/main`, fetch, and verify local `HEAD` equals `origin/main`.

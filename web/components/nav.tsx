@@ -12,7 +12,7 @@ const LINKS = [
 export function Nav() {
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--color-border-soft)] bg-[var(--color-bg)]/80 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4 sm:px-6">
+      <div className="flex h-14 w-full items-center gap-6 px-4 sm:px-6 lg:px-14">
         <Link href="/" className="flex shrink-0 items-center" aria-label="SiliconFission 首页">
           <img src="/brand/siliconfission-mark.svg" alt="SiliconFission" className="h-7 w-auto sm:hidden" />
           <img src="/brand/siliconfission-logo.svg" alt="SiliconFission" className="hidden h-7 w-auto sm:block" />
