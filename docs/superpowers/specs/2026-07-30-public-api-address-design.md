@@ -12,14 +12,14 @@ The only public OpenAI-compatible base URL displayed by the website is:
 https://api.siliconfission.com/v1
 ```
 
-The frontend website address `https://www.siliconfission.com` must never be used as an API base URL. The obsolete `.ai` example must also be removed.
+The frontend website address `https://www.siliconfission.com` must never be used as an API base URL.
 
 ## Scope
 
 - Replace the documentation page's browser-origin inference with the canonical API base URL.
 - Ensure the documentation table and its Python, Node.js, and cURL copy examples all consume the same canonical value.
-- Correct the homepage Python example from `api.siliconfission.ai` to `api.siliconfission.com`.
-- Search the public web source for stale `www.siliconfission.com/v1`, `siliconfission.com/v1`, and `api.siliconfission.ai/v1` variants.
+- Keep the homepage Python example aligned with the canonical production API base URL.
+- Search the public web source for stale frontend-origin API variants and remove any obsolete example URLs.
 - Do not change upstream channel addresses, internal gateway routing, authentication, or API behavior.
 
 ## Behavior

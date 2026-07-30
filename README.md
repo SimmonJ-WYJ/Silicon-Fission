@@ -11,7 +11,7 @@ Silicon Fission 是一个 LLM 统一 API 网关(OpenRouter 竞品):OpenAI 兼容
 | 🌐 官网 / 用户控制台(前台) | https://siliconfission.com |
 | 🔌 API 网关 / 管理后台(new-api) | https://api.siliconfission.com |
 
-> 前台部署在 Vercel(自动 HTTPS),后端 new-api 部署在 VPS(Caddy 自动 HTTPS)。`www.siliconfission.com` 会 308 跳转到主域名。旧地址 `silicon-fission.vercel.app` 仍可用。
+> 前台部署在 Vercel(自动 HTTPS),后端 API 网关部署在 VPS / 出海节点(Caddy 自动 HTTPS)。`www.siliconfission.com` 会 308 跳转到主域名。旧地址 `silicon-fission.vercel.app` 仅作历史保留。
 
 - 🚦 **正式上线手册(Vercel + VPS 生产部署)**:[docs/go-live.md](docs/go-live.md)
 - 📘 **功能文档(所有已实现功能总览)**:[docs/FEATURES.md](docs/FEATURES.md)
@@ -39,14 +39,14 @@ cp .env.example .env   # 填入上游供应商的 API Key
 npm run dev            # 默认监听 http://localhost:8788
 ```
 
-调用(与 OpenAI SDK 完全兼容,换 base URL 即可):
+调用(与 OpenAI SDK 完全兼容,只需替换 base URL):
 
 ```bash
-curl http://localhost:8788/v1/chat/completions \
-  -H "Authorization: Bearer $SF_MASTER_KEY" \
+curl https://api.siliconfission.com/v1/chat/completions \
+  -H "Authorization: Bearer $SF_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "deepseek/deepseek-chat",
+    "model": "deepseek-chat",
     "messages": [{"role": "user", "content": "你好,介绍一下你自己"}],
     "stream": true
   }'
@@ -55,7 +55,7 @@ curl http://localhost:8788/v1/chat/completions \
 列出模型目录:
 
 ```bash
-curl http://localhost:8788/v1/models -H "Authorization: Bearer $SF_MASTER_KEY"
+curl https://api.siliconfission.com/v1/models -H "Authorization: Bearer $SF_API_KEY"
 ```
 
 ## 目录结构

@@ -2,7 +2,7 @@
 
 目标:几天内上线一个可对外收费的中转站,**让中国用户不翻墙即可调用国外先进模型**(GPT / Claude / Gemini)以及国产模型。
 
-本方案基于 [new-api](https://github.com/QuantumNous/new-api) **官方镜像**(不修改源码,规避 AGPL 开源义务),你负责品牌、渠道、支付和网络架构。
+本方案基于本仓库自建的统一 API 网关与控制台(兼容 OpenAI 接口),你负责品牌、渠道、支付和网络架构。
 
 ---
 
@@ -16,7 +16,7 @@
   │  base_url = https://api.siliconfission.com/v1
   │  Authorization: Bearer sk-你发的Key                           
   ▼                                                               
-[入口层] ── 国内可达的域名/节点 ──> [new-api 网关] ── 出海 ──> api.openai.com
+[入口层] ── 国内可达的域名/节点 ──> [统一 API 网关] ── 出海 ──> api.openai.com
                                           │                      api.anthropic.com
                                           │                      国产模型(直连国内)
                                           ▼
@@ -28,7 +28,7 @@
 ### 1. 出海(egress):服务器要能访问 `api.openai.com`
 两种做法,任选:
 - **服务器直接放境外**(香港 / 新加坡 / 美西):最简单,本身就能出海。
-- **给境外渠道单独配代理**:在 new-api 后台「渠道 → 编辑 → 代理设置」里,为 OpenAI/Claude 渠道填一个出海代理地址。这样服务器可以放在任何地方,只有国外渠道走代理。粒度更细,推荐。
+- **给境外渠道单独配代理**:在后台「渠道 → 编辑 → 代理设置」里,为 OpenAI/Claude 渠道填一个出海代理地址。这样服务器可以放在任何地方,只有国外渠道走代理。粒度更细,推荐。
   (也可用 `docker-compose.yml` 里的 `HTTP_PROXY` 给整个进程设代理,但会影响国产渠道,不推荐。)
 
 ### 2. 入口:用户连你的域名不能被墙
@@ -85,7 +85,32 @@ docker compose logs -f new-api   # 看启动日志
 
 ---
 
-## 四、开通对外收费
+## 四、Claude Code 终端接入
+
+如果你要让 Claude Code 桌面端或终端直接走你的中转站,用这一套环境变量:
+
+```jsonc
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://api.siliconfission.com",
+    "ANTHROPIC_AUTH_TOKEN": "你的 sk- Key",
+    "ANTHROPIC_MODEL": "claude-opus-5",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-5",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-6",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-sonnet-4-6"
+  }
+}
+```
+
+要点:
+- `ANTHROPIC_BASE_URL` 只填到域名根部,不要带 `/v1`。
+- `ANTHROPIC_AUTH_TOKEN` 填你在本站控制台创建的 `sk-` Key。
+- Claude Code 会自己拼接 `/v1/messages` 等路径。
+- 如果你用 Claude Code 终端,可以先执行 `claude --model claude-opus-5` 验证连通性。
+
+---
+
+## 五、开通对外收费
 
 - new-api 内置**用户系统 + 令牌(API Key)管理 + 额度/充值 + 兑换码**。
 - 在线支付:new-api 支持对接易支付(彩虹易支付等)实现支付宝/微信充值,后台「支付设置」配置。
@@ -93,7 +118,7 @@ docker compose logs -f new-api   # 看启动日志
 
 ---
 
-## 五、上线前必读的三个风险
+## 六、上线前必读的三个风险
 
 1. **上游封号**:OpenAI/Anthropic 官方不服务中国大陆,转售其额度违反 ToS,渠道可能被封。对策:多渠道冗余、监控可用性、准备备用号。
 2. **国内合规**:面向公众提供未备案的境外大模型,处于监管灰色地带。自行评估法律风险,必要时咨询专业意见。
@@ -101,9 +126,9 @@ docker compose logs -f new-api   # 看启动日志
 
 ---
 
-## 六、这和自研 gateway 的关系
+## 七、这和自研 gateway 的关系
 
 - `deploy/`(本目录):用 new-api **快速验证需求、跑现金流**。可弃、合规、一两天上线。
-- `gateway/`:自研网关内核,是你**能闭源、能差异化、能卖给企业**的长期资产。等 new-api 验证了市场,再决定投入。
+- `gateway/`:自研网关内核,是你**能闭源、能差异化、能卖给企业**的长期资产。等验证了市场,再决定投入。
 
 两条腿并行,详见 [SPEC.md](SPEC.md) 的两人团队楔子策略。

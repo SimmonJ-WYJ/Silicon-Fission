@@ -6,6 +6,7 @@ type Lang = "curl" | "python" | "node";
 
 export function DocsClient() {
   const base = "https://api.siliconfission.com/v1";
+  const anthropicBase = "https://api.siliconfission.com";
   const [lang, setLang] = useState<Lang>("python");
   const [copied, setCopied] = useState(false);
 
@@ -53,18 +54,34 @@ console.log(resp.choices[0].message.content);`,
 
   return (
     <div className="mt-8 space-y-10">
+      <section className="card p-5 text-sm text-[var(--color-muted)]">
+        <div className="font-medium text-[var(--color-text)]">先看清楚:两种接入方式</div>
+        <ul className="mt-2 space-y-1.5">
+          <li>
+            · <span className="font-medium text-[var(--color-text)]">OpenAI 兼容接口</span>:
+            base_url 用 <code className="rounded bg-[var(--color-panel-2)] px-1.5 py-0.5">{base}</code>。
+          </li>
+          <li>
+            · <span className="font-medium text-[var(--color-text)]">Claude Code / Anthropic 兼容接入</span>:
+            base_url 用 <code className="rounded bg-[var(--color-panel-2)] px-1.5 py-0.5">{anthropicBase}</code>,不带
+            <code className="mx-1 rounded bg-[var(--color-panel-2)] px-1.5 py-0.5">/v1</code>。
+          </li>
+        </ul>
+      </section>
+
       {/* Step 1 */}
       <section>
-        <h2 className="text-lg font-semibold">第 1 步:获取 API Key</h2>
+        <h2 className="text-lg font-semibold">第 1 步:获取本站 API Key</h2>
         <p className="mt-2 text-sm text-[var(--color-muted)]">
-          登录后进入 <a href="/dashboard" className="text-[var(--color-brand-2)]">控制台</a>,点「新建 Key」创建一个
-          sk- 开头的密钥,妥善保存(它等同于你的消费权限,请勿泄露)。
+          进入 <a href="/dashboard" className="text-[var(--color-brand-2)]">控制台</a>,点「新建 Key」创建一个
+          sk- 开头的密钥,妥善保存(它等同于你的消费权限,请勿泄露)。无论是 OpenAI 兼容接口还是 Claude Code,
+          都填写这个本站 Key。
         </p>
       </section>
 
       {/* Step 2 */}
       <section>
-        <h2 className="text-lg font-semibold">第 2 步:配置两项参数</h2>
+        <h2 className="text-lg font-semibold">第 2 步:按接入方式填写 base_url</h2>
         <div className="mt-3 overflow-hidden rounded-xl border border-[var(--color-border)]">
           <table className="w-full text-sm">
             <tbody>
@@ -79,6 +96,9 @@ console.log(resp.choices[0].message.content);`,
             </tbody>
           </table>
         </div>
+        <p className="mt-2 text-xs text-[var(--color-muted)]">
+          上面这一组是给 OpenAI SDK 用的。Claude Code 终端/桌面端请看下面的单独说明。
+        </p>
       </section>
 
       {/* Step 3: code */}
@@ -125,6 +145,33 @@ console.log(resp.choices[0].message.content);`,
         </ul>
       </section>
 
+      {/* Claude Code */}
+      <section>
+        <h2 className="text-lg font-semibold">Claude Code / Anthropic 接入</h2>
+        <div className="mt-3 overflow-hidden rounded-xl border border-[var(--color-border)]">
+          <table className="w-full text-sm">
+            <tbody>
+              <tr className="border-b border-[var(--color-border-soft)]">
+                <td className="w-40 bg-[var(--color-panel)] px-4 py-3 font-medium">ANTHROPIC_BASE_URL</td>
+                <td className="px-4 py-3 font-mono text-[var(--color-muted)]">{anthropicBase}</td>
+              </tr>
+              <tr>
+                <td className="bg-[var(--color-panel)] px-4 py-3 font-medium">ANTHROPIC_AUTH_TOKEN</td>
+                <td className="px-4 py-3 font-mono text-[var(--color-muted)]">你的本站 sk- Key</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-3 rounded-xl bg-[var(--color-panel-2)] p-4 text-sm text-[var(--color-muted)]">
+          <div className="font-medium text-[var(--color-text)]">关键规则</div>
+          <ul className="mt-2 space-y-1.5">
+            <li>· Claude Code 这类客户端不要填 `/v1`。</li>
+            <li>· 这里只填域名根部,客户端会自己拼接消息路径。</li>
+            <li>· 如果你看见 `v1`,那是 OpenAI 兼容文档,不是 Claude Code 文档。</li>
+          </ul>
+        </div>
+      </section>
+
       {/* Model names */}
       <section>
         <h2 className="text-lg font-semibold">模型名怎么填</h2>
@@ -141,7 +188,7 @@ console.log(resp.choices[0].message.content);`,
         <div className="font-medium text-[var(--color-text)]">说明</div>
         <ul className="mt-2 space-y-1.5">
           <li>· 计费按实际 token 用量从账户余额扣除,可在控制台查看消费明细。</li>
-          <li>· 请求经本站转发到上游模型,你的后端地址与拓扑不会暴露给终端用户。</li>
+          <li>· 请求经本站转发到上游模型,终端只需要填写本站的 base_url 和自己的 sk- Key。</li>
           <li>· 遇到 401 请检查 Key;余额不足会返回相应错误。</li>
         </ul>
       </section>

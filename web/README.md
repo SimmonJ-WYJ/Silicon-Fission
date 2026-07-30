@@ -9,7 +9,7 @@ OpenRouter 风格的前端(Next.js 16 + Tailwind v4,深色主题)。**这是你�
 | `/` | 首页:Hero、平台数据、热门模型、SDK 兼容示例 |
 | `/models` | 模型市场:侧边筛选(线路/系列)+ 排序 + 卡片网格 |
 | `/models/[id]` | 模型详情:参数、供应商与价格表 |
-| `/chat` | 对话 Playground:多模型,直连网关 `/v1/chat/completions` |
+| `/chat` | 对话 Playground:多模型,直连网关 `https://api.siliconfission.com/v1/chat/completions` |
 | `/rankings` | 模型榜单:按用量排名 |
 | `/dashboard` | 控制台:余额、用量图表、API Key 管理 |
 
@@ -21,14 +21,14 @@ npm install
 npm run dev          # http://localhost:3001
 ```
 
-## 对接后端(已实现:new-api)
+## 对接后端(已实现:统一 API 网关)
 
-前端通过本站的 Next.js API 路由(`app/api/*`)服务端代理到 new-api 后端——浏览器不直接接触后端地址,无 CORS 问题,后端拓扑不暴露。
+前端通过本站的 Next.js API 路由(`app/api/*`)服务端代理到后端 API 网关——浏览器不直接接触后端地址,无 CORS 问题,后端拓扑不暴露。
 
 ```bash
-# 本地把 new-api 跑在 3000 端口(见 ../deploy),然后:
+# 本地把 API 网关跑起来(见 ../deploy 或 gateway),然后:
 cd web
-echo "NEWAPI_BASE=http://localhost:3000" > .env.local
+echo "NEWAPI_BASE=https://api.siliconfission.com" > .env.local
 npm install && npm run dev     # http://localhost:3001
 ```
 
@@ -38,9 +38,9 @@ npm install && npm run dev     # http://localhost:3001
 |---|---|---|
 | /login | 登录/注册(JWT 存 httpOnly cookie) | `/api/auth/*` → `/api/user/login`、`/api/user/register` |
 | /dashboard | 真实余额、API Key 列表/新建/查看完整 Key | `/api/me`、`/api/keys*` → `/api/user/self`、`/api/token/*` |
-| /chat | 选真实可用模型,用 sk- Key 发起对话 | `/api/chat` → `/v1/chat/completions` |
+| /chat | 选真实可用模型,用 sk- Key 发起对话 | `/api/chat` → `https://api.siliconfission.com/v1/chat/completions` |
 
-使用流程:后台(new-api 管理端)配置渠道 → 用户在本站注册/登录 → 控制台建 Key → Playground 或 OpenAI SDK 调模型 → 账户按量扣费。
+使用流程:后台配置渠道 → 用户在本站注册/登录 → 控制台建 Key → Playground 或 OpenAI SDK 调模型 → 账户按量扣费。
 
 额度换算:new-api 默认 500000 quota = $1(见 `lib/newapi-server.ts` 的 `QUOTA_PER_USD`)。
 

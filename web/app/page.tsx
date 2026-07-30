@@ -76,10 +76,12 @@ export default async function Home() {
         <div className="card overflow-hidden">
           <div className="grid gap-8 p-8 lg:grid-cols-2 lg:items-center">
             <div>
-              <h2 className="text-2xl font-semibold">和 OpenAI SDK 完全兼容</h2>
+              <h2 className="text-2xl font-semibold">OpenAI SDK / Claude Code 两种接入</h2>
               <p className="mt-3 text-[var(--color-muted)]">
-                无需改代码,只换 <code className="rounded bg-[var(--color-panel-2)] px-1">base_url</code> 和
-                API Key。所有模型统一为 OpenAI 协议,内置跨供应商自动容灾。
+                OpenAI SDK 只换 <code className="rounded bg-[var(--color-panel-2)] px-1">base_url</code> 和 API Key;
+                Claude Code 只换 <code className="rounded bg-[var(--color-panel-2)] px-1">ANTHROPIC_BASE_URL</code> 和
+                Key。OpenAI 兼容入口带 <code className="rounded bg-[var(--color-panel-2)] px-1">/v1</code>,Claude Code
+                不带。
               </p>
               <Link
                 href="/dashboard"
