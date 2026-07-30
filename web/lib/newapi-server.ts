@@ -3,13 +3,11 @@
 // 通过环境变量 NEWAPI_BASE 指向你的 new-api 实例,如 http://localhost:3000
 
 import { cookies } from "next/headers";
+export { QUOTA_PER_USD } from "./quota-adjustment";
 
 export const NEWAPI_BASE = process.env.NEWAPI_BASE ?? "http://localhost:3000";
 
 export const TOKEN_COOKIE = "sf_token";
-
-/** new-api 的额度单位:500000 quota = 1 USD(QuotaPerUnit 默认值) */
-export const QUOTA_PER_USD = 500_000;
 
 export interface NapiResult<T = unknown> {
   success: boolean;
