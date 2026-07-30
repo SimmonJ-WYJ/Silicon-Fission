@@ -33,7 +33,7 @@
 
 ### 2.1 核心 API(MVP,P0)
 
-统一入口:`https://api.siliconfission.ai/v1`
+统一入口:`https://api.siliconfission.com/v1`
 
 | 端点 | 说明 |
 |---|---|

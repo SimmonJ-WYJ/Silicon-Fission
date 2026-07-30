@@ -93,7 +93,7 @@ export default async function Home() {
 {`from openai import OpenAI
 
 client = OpenAI(
-  base_url="https://api.siliconfission.ai/v1",
+  base_url="https://api.siliconfission.com/v1",
   api_key="sk-sf-...",
 )
 

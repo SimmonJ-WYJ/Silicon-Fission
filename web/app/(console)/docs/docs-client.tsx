@@ -1,20 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type Lang = "curl" | "python" | "node";
 
 export function DocsClient() {
-  const [base, setBase] = useState("https://api.你的域名.com/v1");
+  const base = "https://api.siliconfission.com/v1";
   const [lang, setLang] = useState<Lang>("python");
   const [copied, setCopied] = useState(false);
-
-  // 用当前站点域名推断 base_url(前端与网关同域时最直观)
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      setBase(`${window.location.origin}/v1`);
-    }
-  }, []);
 
   const snippets: Record<Lang, string> = {
     curl: `curl ${base}/chat/completions \\

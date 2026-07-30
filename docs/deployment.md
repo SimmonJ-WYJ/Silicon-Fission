@@ -13,7 +13,7 @@
 ```
 中国用户                         你的中转站                        上游模型
 (不翻墙)                                                          
-  │  base_url = https://api.你的域名.com/v1                        
+  │  base_url = https://api.siliconfission.com/v1
   │  Authorization: Bearer sk-你发的Key                           
   ▼                                                               
 [入口层] ── 国内可达的域名/节点 ──> [new-api 网关] ── 出海 ──> api.openai.com
