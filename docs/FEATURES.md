@@ -101,6 +101,8 @@
 
 **接入新渠道**支持上游预设(DeepSeek / SiliconFlow / Moonshot / OpenAI / 自定义),选中自动填好 Base URL 与推荐模型,填入上游 API Key 即可接入。
 
+**用户额度管理**位于同页用户表格的「调整额度」。管理员可为任意用户（包括超级管理员账号）直接增加或扣减 USD 等值额度；修改会写入 New API 的真实 quota 并立即刷新余额。该操作是后台人工调账，**不会创建订单，也不经过 `/topup` 支付流程**。
+
 ### 3.7 榜单 `/rankings` 与 充值 `/topup`
 - 榜单:按用量排名的模型列表(示例数据)
 - 充值:人民币档位 + 自定义金额、支付方式(支付宝/微信/Stripe)、实时订单摘要(3% 手续费 + 汇率换算)。**支付对接为占位**,接入易支付/Stripe 后可真实收款。
@@ -148,8 +150,9 @@ DEMO_MODE=false → 强制真实
 | `/api/admin/setup` | GET/POST | 后端初始化状态 / 初始化 | `/api/setup` |
 | `/api/admin/channels` | GET/POST | 渠道列表 / 新增渠道 | `/api/channel/*` |
 | `/api/admin/channels/[id]/test` | POST | 测试渠道连通 | `/api/channel/test/{id}` |
+| `/api/admin/users/quota` | POST | 管理员增加 / 扣减用户额度 | `/api/user/manage` (`add_quota`, `add/subtract`) |
 
-**额度换算**:new-api 默认 `500000 quota = $1`,常量见 `web/lib/newapi-server.ts` 的 `QUOTA_PER_USD`。
+**额度换算**:new-api 默认 `500000 quota = $1`,常量见 `web/lib/quota-adjustment.ts` 的 `QUOTA_PER_USD`。
 
 ---
 

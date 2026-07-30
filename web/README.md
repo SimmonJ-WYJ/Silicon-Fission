@@ -39,10 +39,13 @@ npm install && npm run dev     # http://localhost:3001
 | /login | 登录/注册(JWT 存 httpOnly cookie) | `/api/auth/*` → `/api/user/login`、`/api/user/register` |
 | /dashboard | 真实余额、API Key 列表/新建/查看完整 Key | `/api/me`、`/api/keys*` → `/api/user/self`、`/api/token/*` |
 | /chat | 选真实可用模型,用 sk- Key 发起对话 | `/api/chat` → `https://api.siliconfission.com/v1/chat/completions` |
+| /admin | 用户列表中直接增加或扣减任意用户额度 | `/api/admin/users/quota` → `/api/user/manage` |
 
 使用流程:后台配置渠道 → 用户在本站注册/登录 → 控制台建 Key → Playground 或 OpenAI SDK 调模型 → 账户按量扣费。
 
-额度换算:new-api 默认 500000 quota = $1(见 `lib/newapi-server.ts` 的 `QUOTA_PER_USD`)。
+管理员调账:在 `/admin` 用户表点击「调整额度」，选择增加或扣减并输入 USD 等值金额。它直接修改 New API quota，不创建支付订单，也与演示性质的 `/topup` 页面无关。
+
+额度换算:new-api 默认 500000 quota = $1(见 `lib/quota-adjustment.ts` 的 `QUOTA_PER_USD`)。
 
 ## 设计说明
 
