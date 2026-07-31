@@ -19,6 +19,7 @@ test("exposes only implemented console destinations", () => {
       "/topup",
       "/settings",
       "/admin",
+      "/admin/pricing",
     ],
   );
 });
