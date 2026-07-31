@@ -22,19 +22,29 @@ test("exposes only implemented console destinations", () => {
       "/admin/pricing",
       "/admin/users",
       "/admin/logs",
+      "/admin/system",
     ],
   );
 });
 
 test("hides administration from standard users", () => {
   assert.equal(
-    visibleConsoleSections(false).some((section) => section.id === "administration"),
+    visibleConsoleSections(1).some((section) => section.id === "administration"),
     false,
   );
   assert.equal(
-    visibleConsoleSections(true).some((section) => section.id === "administration"),
+    visibleConsoleSections(10).some((section) => section.id === "administration"),
     true,
   );
+});
+
+test("reserves root-only settings for super administrators", () => {
+  const adminItems = visibleConsoleSections(10).flatMap((section) => section.items);
+  const rootItems = visibleConsoleSections(100).flatMap((section) => section.items);
+  assert.equal(adminItems.some((item) => item.id === "pricing"), false);
+  assert.equal(adminItems.some((item) => item.id === "system"), false);
+  assert.equal(rootItems.some((item) => item.id === "pricing"), true);
+  assert.equal(rootItems.some((item) => item.id === "system"), true);
 });
 
 test("distinguishes overview from the API Keys hash", () => {

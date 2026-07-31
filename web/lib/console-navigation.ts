@@ -9,13 +9,15 @@ export type ConsoleNavIcon =
   | "channels"
   | "pricing"
   | "users"
-  | "logs";
+  | "logs"
+  | "system";
 
 export interface ConsoleNavItem {
   id: string;
   label: string;
   href: string;
   icon: ConsoleNavIcon;
+  minRole?: number;
 }
 
 export interface ConsoleNavSection {
@@ -51,15 +53,19 @@ export const CONSOLE_NAV_SECTIONS: ConsoleNavSection[] = [
     adminOnly: true,
     items: [
       { id: "channels", label: "渠道配置", href: "/admin", icon: "channels" },
-      { id: "pricing", label: "倍率配置", href: "/admin/pricing", icon: "pricing" },
+      { id: "pricing", label: "倍率配置", href: "/admin/pricing", icon: "pricing", minRole: 100 },
       { id: "users", label: "用户管理", href: "/admin/users", icon: "users" },
       { id: "logs", label: "调用日志", href: "/admin/logs", icon: "logs" },
+      { id: "system", label: "系统设置", href: "/admin/system", icon: "system", minRole: 100 },
     ],
   },
 ];
 
-export function visibleConsoleSections(isAdmin: boolean): ConsoleNavSection[] {
-  return CONSOLE_NAV_SECTIONS.filter((section) => !section.adminOnly || isAdmin);
+export function visibleConsoleSections(role: number): ConsoleNavSection[] {
+  return CONSOLE_NAV_SECTIONS.filter((section) => !section.adminOnly || role >= 10).map((section) => ({
+    ...section,
+    items: section.items.filter((item) => role >= (item.minRole ?? 0)),
+  }));
 }
 
 export function isConsoleItemActive(

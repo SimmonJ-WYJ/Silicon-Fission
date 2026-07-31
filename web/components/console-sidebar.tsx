@@ -24,6 +24,7 @@ function NavIcon({ name }: { name: ConsoleNavIcon }) {
     pricing: <><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></>,
     users: <><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1" /><circle cx="9.5" cy="7" r="3.5" /><path d="M17 11a3 3 0 1 0 0-6M21 19v-1a3.5 3.5 0 0 0-2.5-3.4" /></>,
     logs: <><path d="M4 5h16M4 10h16M4 15h10M4 20h7" /></>,
+    system: <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1" /></>,
   };
 
   return (
@@ -37,7 +38,7 @@ export function ConsoleSidebar() {
   const pathname = usePathname();
   const [hash, setHash] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [role, setRole] = useState(0);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -58,7 +59,7 @@ export function ConsoleSidebar() {
     let active = true;
     fetchMe()
       .then((me) => {
-        if (active) setIsAdmin(Boolean(me?.isAdmin));
+        if (active) setRole(me?.role ?? 0);
       })
       .catch(() => undefined);
     return () => {
@@ -114,7 +115,7 @@ export function ConsoleSidebar() {
 
   const navigation = (
     <nav aria-label="控制台导航" className="space-y-6 px-3 py-5">
-      {visibleConsoleSections(isAdmin).map((section) => (
+      {visibleConsoleSections(role).map((section) => (
         <div key={section.id}>
           <div className="mb-2 px-3 text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--color-faint)]">
             {section.label}
