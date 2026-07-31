@@ -4,20 +4,6 @@ import { useCallback, useEffect, useState } from "react";
 import { fetchMe, type Me } from "@/lib/api";
 import type { ChannelProtocol } from "@/lib/channel-protocol";
 
-interface AdminUser {
-  id: number;
-  username: string;
-  displayName: string;
-  role: number;
-  roleLabel: string;
-  isAdmin: boolean;
-  enabled: boolean;
-  email: string;
-  group: string;
-  balanceUsd: number;
-  usedUsd: number;
-}
-
 interface Channel {
   id: number;
   name: string;
@@ -50,7 +36,6 @@ export function AdminClient() {
   const [status, setStatus] = useState<Status>("loading");
   const [me, setMe] = useState<Me | null>(null);
   const [channels, setChannels] = useState<Channel[]>([]);
-  const [users, setUsers] = useState<AdminUser[]>([]);
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -65,14 +50,6 @@ export function AdminClient() {
   const [deletingChannel, setDeletingChannel] = useState<Channel | null>(null);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const [deleteError, setDeleteError] = useState<string | null>(null);
-
-  // 用户额度调整
-  const [quotaUser, setQuotaUser] = useState<AdminUser | null>(null);
-  const [quotaAction, setQuotaAction] = useState<"increase" | "decrease">("increase");
-  const [quotaAmount, setQuotaAmount] = useState("");
-  const [quotaRemark, setQuotaRemark] = useState("");
-  const [quotaError, setQuotaError] = useState<string | null>(null);
-  const [quotaBusy, setQuotaBusy] = useState(false);
 
   // 初始化表单
   const [initUser, setInitUser] = useState("root");
@@ -115,80 +92,8 @@ export function AdminClient() {
       const body = await chRes.json().catch(() => null);
       setNotice({ ok: false, text: body?.message || "当前账号无管理员权限,仅管理员可配置渠道" });
     }
-    // 4. 拉用户列表
-    const uRes = await fetch("/api/admin/users");
-    if (uRes.ok) {
-      const body = await uRes.json();
-      setUsers(body.data ?? []);
-    } else {
-      setUsers([]);
-    }
     setStatus("ready");
   }, []);
-
-  async function manageUser(id: number, action: string, label: string) {
-    if (action === "delete" && !confirm(`确定删除用户「${label}」?此操作不可恢复。`)) return;
-    setNotice(null);
-    const res = await fetch("/api/admin/users/manage", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, action }),
-    });
-    const body = await res.json().catch(() => ({}));
-    setNotice({ ok: res.ok && body.success, text: body.message || (res.ok ? "操作成功" : "操作失败") });
-    if (res.ok && body.success) await detect();
-  }
-
-  function openQuotaAdjustment(user: AdminUser) {
-    setQuotaUser(user);
-    setQuotaAction("increase");
-    setQuotaAmount("");
-    setQuotaRemark("");
-    setQuotaError(null);
-  }
-
-  function closeQuotaAdjustment() {
-    if (quotaBusy) return;
-    setQuotaUser(null);
-    setQuotaError(null);
-  }
-
-  async function adjustQuota(e: React.FormEvent) {
-    e.preventDefault();
-    if (!quotaUser) return;
-    const amount = Number(quotaAmount);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      setQuotaError("请输入大于 0 的额度");
-      return;
-    }
-
-    setQuotaBusy(true);
-    setQuotaError(null);
-    setNotice(null);
-    try {
-      const res = await fetch("/api/admin/users/quota", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: quotaUser.id, action: quotaAction, amount, remark: quotaRemark }),
-      });
-      const body = await res.json().catch(() => ({}));
-      const ok = res.ok && body.success;
-      const message = body.message || (ok ? "额度调整成功" : "额度调整失败");
-      setNotice({ ok, text: message });
-      if (!ok) {
-        setQuotaError(message);
-        return;
-      }
-      setQuotaUser(null);
-      await detect();
-    } catch {
-      const message = "网络错误，无法调整额度";
-      setQuotaError(message);
-      setNotice({ ok: false, text: message });
-    } finally {
-      setQuotaBusy(false);
-    }
-  }
 
   useEffect(() => {
     detect();
@@ -463,99 +368,6 @@ docker compose ps   # 等待 running 状态`}
         </div>
       )}
 
-      {/* 用户管理 */}
-      <h2 className="mt-8 text-lg font-semibold">
-        用户管理(共 {users.length} 人 · 管理员 {users.filter((u) => u.isAdmin).length} 人)
-      </h2>
-      <div className="mt-3 overflow-hidden rounded-xl border border-[var(--color-border)]">
-        <table className="w-full text-sm">
-          <thead className="bg-[var(--color-panel)] text-left text-[var(--color-faint)]">
-            <tr>
-              <th className="px-4 py-2 font-medium">用户名</th>
-              <th className="px-4 py-2 font-medium">角色</th>
-              <th className="px-4 py-2 font-medium">余额</th>
-              <th className="px-4 py-2 font-medium">已用</th>
-              <th className="px-4 py-2 font-medium">状态</th>
-              <th className="px-4 py-2 font-medium">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-[var(--color-faint)]">
-                  暂无用户
-                </td>
-              </tr>
-            )}
-            {users.map((u) => (
-              <tr key={u.id} className="border-t border-[var(--color-border-soft)]">
-                <td className="px-4 py-2.5">
-                  {u.displayName}
-                  <span className="ml-1 text-xs text-[var(--color-faint)]">@{u.username}</span>
-                </td>
-                <td className="px-4 py-2.5">
-                  <span
-                    className={
-                      u.role >= 100
-                        ? "text-[var(--color-brand)]"
-                        : u.role >= 10
-                          ? "text-[var(--color-brand-2)]"
-                          : "text-[var(--color-muted)]"
-                    }
-                  >
-                    {u.roleLabel}
-                  </span>
-                </td>
-                <td className="px-4 py-2.5">${u.balanceUsd}</td>
-                <td className="px-4 py-2.5 text-[var(--color-muted)]">${u.usedUsd}</td>
-                <td className="px-4 py-2.5">
-                  <span className={u.enabled ? "text-[var(--color-green)]" : "text-[var(--color-amber)]"}>
-                    {u.enabled ? "正常" : "已禁用"}
-                  </span>
-                </td>
-                <td className="px-4 py-2.5">
-                  <div className="flex flex-wrap gap-2 text-xs">
-                    <button
-                      onClick={() => openQuotaAdjustment(u)}
-                      className="font-medium text-[var(--color-brand-2)] hover:underline"
-                    >
-                      调整额度
-                    </button>
-                    {u.role >= 100 ? (
-                      <span className="text-[var(--color-faint)]">其他操作不可用</span>
-                    ) : (
-                      <>
-                      {u.isAdmin ? (
-                        <button onClick={() => manageUser(u.id, "demote", u.username)} className="text-[var(--color-muted)] hover:text-[var(--color-text)]">
-                          降为普通
-                        </button>
-                      ) : (
-                        <button onClick={() => manageUser(u.id, "promote", u.username)} className="text-[var(--color-brand-2)] hover:underline">
-                          设为管理员
-                        </button>
-                      )}
-                      {u.enabled ? (
-                        <button onClick={() => manageUser(u.id, "disable", u.username)} className="text-[var(--color-amber)] hover:underline">
-                          禁用
-                        </button>
-                      ) : (
-                        <button onClick={() => manageUser(u.id, "enable", u.username)} className="text-[var(--color-green)] hover:underline">
-                          启用
-                        </button>
-                      )}
-                      <button onClick={() => manageUser(u.id, "delete", u.username)} className="text-[var(--color-faint)] hover:text-[var(--color-amber)]">
-                        删除
-                      </button>
-                      </>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
       {/* 已接入渠道 */}
       <h2 className="mt-10 text-lg font-semibold">已接入渠道({channels.length})</h2>
       <div className="mt-3 overflow-hidden rounded-xl border border-[var(--color-border)]">
@@ -679,91 +491,6 @@ docker compose ps   # 等待 running 状态`}
         配好渠道后:去 <a href="/dashboard" className="text-[var(--color-brand-2)]">控制台</a> 创建
         sk- Key → 在 <a href="/chat" className="text-[var(--color-brand-2)]">对话</a> 里选模型即可使用。
       </p>
-
-      {quotaUser && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="quota-adjustment-title"
-        >
-          <form onSubmit={adjustQuota} className="w-full max-w-md space-y-4 rounded-2xl bg-[var(--color-bg)] p-6 shadow-2xl">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 id="quota-adjustment-title" className="text-lg font-semibold">调整用户额度</h2>
-                <p className="mt-1 text-sm text-[var(--color-muted)]">
-                  {quotaUser.displayName} <span className="text-xs text-[var(--color-faint)]">@{quotaUser.username}</span>
-                </p>
-              </div>
-              <button type="button" disabled={quotaBusy} onClick={closeQuotaAdjustment} className="text-sm text-[var(--color-muted)] hover:text-[var(--color-text)] disabled:opacity-40">
-                关闭
-              </button>
-            </div>
-
-            <div className="rounded-xl bg-[var(--color-panel)] px-4 py-3 text-sm">
-              当前余额：<span className="font-semibold">${quotaUser.balanceUsd.toFixed(4)}</span>
-            </div>
-
-            <fieldset>
-              <legend className="text-xs text-[var(--color-faint)]">调整方式</legend>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <label className={`cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm ${quotaAction === "increase" ? "border-[var(--color-brand)] bg-[var(--color-brand)]/10" : "border-[var(--color-border)]"}`}>
-                  <input className="sr-only" type="radio" name="quota-action" value="increase" checked={quotaAction === "increase"} onChange={() => setQuotaAction("increase")} />
-                  增加额度
-                </label>
-                <label className={`cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm ${quotaAction === "decrease" ? "border-red-400 bg-red-50 text-red-700" : "border-[var(--color-border)]"}`}>
-                  <input className="sr-only" type="radio" name="quota-action" value="decrease" checked={quotaAction === "decrease"} onChange={() => setQuotaAction("decrease")} />
-                  扣减额度
-                </label>
-              </div>
-            </fieldset>
-
-            <div>
-              <label htmlFor="quota-amount" className="text-xs text-[var(--color-faint)]">额度（USD 等值）</label>
-              <input
-                id="quota-amount"
-                type="number"
-                min="0.0001"
-                step="0.0001"
-                value={quotaAmount}
-                onChange={(e) => setQuotaAmount(e.target.value)}
-                placeholder="例如：20000"
-                autoFocus
-                required
-                className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 text-sm outline-none"
-              />
-              <p className="mt-1 text-xs text-[var(--color-faint)]">1 USD 等值额度 = 500,000 New API quota；此操作不经过支付。</p>
-            </div>
-
-            <div>
-              <label htmlFor="quota-remark" className="text-xs text-[var(--color-faint)]">备注（可选）</label>
-              <textarea
-                id="quota-remark"
-                value={quotaRemark}
-                onChange={(e) => setQuotaRemark(e.target.value)}
-                maxLength={200}
-                rows={3}
-                placeholder="例如：超级管理员测试额度"
-                className="mt-1 w-full resize-none rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 text-sm outline-none"
-              />
-            </div>
-
-            {quotaError && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{quotaError}</p>}
-            <div className="flex justify-end gap-3 pt-2">
-              <button type="button" disabled={quotaBusy} onClick={closeQuotaAdjustment} className="rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm disabled:opacity-40">
-                取消
-              </button>
-              <button
-                type="submit"
-                disabled={quotaBusy || !quotaAmount || Number(quotaAmount) <= 0}
-                className={`rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-40 ${quotaAction === "decrease" ? "bg-red-600 hover:bg-red-700" : "bg-gray-900 hover:bg-gray-700"}`}
-              >
-                {quotaBusy ? "提交中…" : `确认${quotaAction === "increase" ? "增加" : "扣减"}`}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
       {editingChannel && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-labelledby="edit-channel-title">
