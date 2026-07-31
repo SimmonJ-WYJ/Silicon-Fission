@@ -62,7 +62,7 @@ async function tryModel(modelId: string, req: ChatRequest, attempts: Attempt[]):
   for (const ep of candidates) {
     const start = Date.now();
     try {
-      const res = await adapters[ep.provider].chat(req, ep.upstreamModel, config.providerKeys[ep.provider]);
+      const res = await adapters[ep.provider].chat(req, ep.upstreamModel, config.providerKeys[ep.provider], ep.path);
       const latencyMs = Date.now() - start;
       attempts.push({ provider: ep.provider, model: modelId, status: res.status, latencyMs });
       // 5xx / 429 → 换下一家;4xx 属请求本身问题,直接透传给客户端

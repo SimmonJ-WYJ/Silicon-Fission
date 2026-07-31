@@ -13,6 +13,8 @@ export interface ProviderEndpoint {
   outputPrice: number;
   /** 上下文窗口 */
   contextLength: number;
+  /** 可选:覆盖默认的 /chat/completions 路径(如腾讯混元视觉模型的 /api/3d/submit) */
+  path?: string;
 }
 
 export interface ChatRequest {
@@ -26,5 +28,5 @@ export interface ProviderAdapter {
   id: string;
   baseUrl: string;
   /** 发起上游请求,返回原始 Response(流式/非流式均透传) */
-  chat(req: ChatRequest, upstreamModel: string, apiKey: string): Promise<Response>;
+  chat(req: ChatRequest, upstreamModel: string, apiKey: string, pathOverride?: string): Promise<Response>;
 }

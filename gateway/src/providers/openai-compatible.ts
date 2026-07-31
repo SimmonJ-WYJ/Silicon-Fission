@@ -7,9 +7,10 @@ export function openAICompatible(id: string, baseUrl: string): ProviderAdapter {
   return {
     id,
     baseUrl,
-    async chat(req: ChatRequest, upstreamModel: string, apiKey: string): Promise<Response> {
+    async chat(req: ChatRequest, upstreamModel: string, apiKey: string, pathOverride?: string): Promise<Response> {
       const { models: _models, provider: _provider, ...payload } = req;
-      return fetch(`${baseUrl}/chat/completions`, {
+      const path = pathOverride ?? "/chat/completions";
+      return fetch(`${baseUrl}${path}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
