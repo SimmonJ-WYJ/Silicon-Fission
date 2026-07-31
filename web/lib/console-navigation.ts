@@ -8,7 +8,8 @@ export type ConsoleNavIcon =
   | "settings"
   | "channels"
   | "pricing"
-  | "users";
+  | "users"
+  | "logs";
 
 export interface ConsoleNavItem {
   id: string;
@@ -52,6 +53,7 @@ export const CONSOLE_NAV_SECTIONS: ConsoleNavSection[] = [
       { id: "channels", label: "渠道配置", href: "/admin", icon: "channels" },
       { id: "pricing", label: "倍率配置", href: "/admin/pricing", icon: "pricing" },
       { id: "users", label: "用户管理", href: "/admin/users", icon: "users" },
+      { id: "logs", label: "调用日志", href: "/admin/logs", icon: "logs" },
     ],
   },
 ];

@@ -23,6 +23,7 @@ function NavIcon({ name }: { name: ConsoleNavIcon }) {
     channels: <><path d="M4 7h10M18 7h2M4 17h2M10 17h10" /><circle cx="16" cy="7" r="2" /><circle cx="8" cy="17" r="2" /></>,
     pricing: <><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></>,
     users: <><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1" /><circle cx="9.5" cy="7" r="3.5" /><path d="M17 11a3 3 0 1 0 0-6M21 19v-1a3.5 3.5 0 0 0-2.5-3.4" /></>,
+    logs: <><path d="M4 5h16M4 10h16M4 15h10M4 20h7" /></>,
   };
 
   return (
