@@ -1,6 +1,18 @@
-# Caddy 会为 DOMAIN 自动申请并续期 Let's Encrypt 证书,反代到 new-api。
-# DOMAIN 由 .env 注入(如 api.yourdomain.com)。
+# Caddy 为每个站点自动申请并续期 Let's Encrypt 证书。
+# DOMAIN 由 .env 注入(如 siliconfission.com)。
+
+# new-api 管理后台
 {$DOMAIN} {
 	encode gzip
 	reverse_proxy new-api:3000
+}
+
+# 自定义网关:统一 OpenAI 兼容 API 入口
+# 前置:api.{$DOMAIN} 的 A 记录需指向本机公网 IP,否则签发证书会失败。
+api.{$DOMAIN} {
+	encode gzip
+	reverse_proxy gateway:8788 {
+		# 流式响应(SSE)必须关闭缓冲,否则 token 会被攒着一次性吐出
+		flush_interval -1
+	}
 }

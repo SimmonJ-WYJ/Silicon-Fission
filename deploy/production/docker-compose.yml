@@ -34,6 +34,25 @@ services:
       redis:
         condition: service_healthy
 
+  # 自定义网关:统一 OpenAI 兼容入口 + 智能路由/降级,由本仓库源码构建。
+  # 对外走 api.${DOMAIN},与 new-api 后台完全隔离。
+  gateway:
+    build:
+      context: ../../gateway
+      dockerfile: Dockerfile
+    container_name: sf-gateway
+    restart: always
+    expose:
+      - "8788" # 仅容器内网可见,由 caddy 代理
+    environment:
+      PORT: "8788"
+      TZ: Asia/Shanghai
+      SF_MASTER_KEY: "${SF_MASTER_KEY:?}"
+      DEEPSEEK_API_KEY: "${DEEPSEEK_API_KEY:-}"
+      SILICONFLOW_API_KEY: "${SILICONFLOW_API_KEY:-}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      MOONSHOT_API_KEY: "${MOONSHOT_API_KEY:-}"
+
   postgres:
     image: postgres:15
     container_name: sf-postgres
@@ -78,6 +97,7 @@ services:
       - caddy_config:/config
     depends_on:
       - new-api
+      - gateway
 
 volumes:
   pg_data:
