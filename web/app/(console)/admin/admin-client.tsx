@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { fetchMe, type Me } from "@/lib/api";
-import type { ChannelProtocol } from "@/lib/channel-protocol";
+import { CHANNEL_KEY_HINTS, CHANNEL_TYPE_OPTIONS, channelTypeLabel } from "@/lib/channel-catalog";
 
 interface Channel {
   id: number;
+  type?: number;
   name: string;
   baseUrl: string;
   models: string;
@@ -13,22 +14,6 @@ interface Channel {
   usedQuota: number;
   responseTimeMs: number;
 }
-
-// 常用上游预设:选中后自动填协议、base_url 和推荐模型
-const PRESETS = [
-  { id: "deepseek", label: "DeepSeek", protocol: "openai", baseUrl: "https://api.deepseek.com", models: "deepseek-chat,deepseek-reasoner" },
-  { id: "siliconflow", label: "SiliconFlow 硅基流动", protocol: "openai", baseUrl: "https://api.siliconflow.cn", models: "deepseek-ai/DeepSeek-V3,Qwen/Qwen2.5-72B-Instruct" },
-  { id: "moonshot", label: "Moonshot Kimi", protocol: "openai", baseUrl: "https://api.moonshot.cn", models: "moonshot-v1-8k,kimi-k2-0711-preview" },
-  { id: "openai", label: "OpenAI(需出海线路)", protocol: "openai", baseUrl: "https://api.openai.com", models: "gpt-4o,gpt-4o-mini" },
-  { id: "custom", label: "自定义(OpenAI 兼容)", protocol: "openai", baseUrl: "", models: "" },
-  { id: "anthropic", label: "Claude / Anthropic", protocol: "anthropic", baseUrl: "", models: "" },
-] as const satisfies readonly {
-  id: string;
-  label: string;
-  protocol: ChannelProtocol;
-  baseUrl: string;
-  models: string;
-}[];
 
 type Status = "loading" | "offline" | "uninitialized" | "unauthed" | "ready";
 
@@ -56,11 +41,26 @@ export function AdminClient() {
   const [initPass, setInitPass] = useState("");
 
   // 新渠道表单
-  const [preset, setPreset] = useState<(typeof PRESETS)[number]["id"]>("deepseek");
-  const [chName, setChName] = useState("DeepSeek");
-  const [chBase, setChBase] = useState<string>(PRESETS[0].baseUrl);
+  const [chType, setChType] = useState(1);
+  const [chMode, setChMode] = useState<"single" | "batch" | "multi_to_single">("single");
+  const [chName, setChName] = useState("OpenAI");
+  const [chBase, setChBase] = useState("");
   const [chKey, setChKey] = useState("");
-  const [chModels, setChModels] = useState<string>(PRESETS[0].models);
+  const [chModels, setChModels] = useState("");
+  const [chGroup, setChGroup] = useState("default");
+  const [chOrganization, setChOrganization] = useState("");
+  const [chModelMapping, setChModelMapping] = useState("");
+  const [chPriority, setChPriority] = useState(0);
+  const [chWeight, setChWeight] = useState(0);
+  const [chTestModel, setChTestModel] = useState("");
+  const [chAutoBan, setChAutoBan] = useState(true);
+  const [chTag, setChTag] = useState("");
+  const [chRemark, setChRemark] = useState("");
+  const [chStatusMapping, setChStatusMapping] = useState("");
+  const [chParamOverride, setChParamOverride] = useState("");
+  const [chHeaderOverride, setChHeaderOverride] = useState("");
+  const [chSetting, setChSetting] = useState("");
+  const [chSettings, setChSettings] = useState("");
 
   const detect = useCallback(async () => {
     setStatus("loading");
@@ -99,14 +99,6 @@ export function AdminClient() {
     detect();
   }, [detect]);
 
-  function applyPreset(id: (typeof PRESETS)[number]["id"]) {
-    const p = PRESETS.find((x) => x.id === id)!;
-    setPreset(id);
-    setChName(p.id === "anthropic" ? p.label : p.label.split("(")[0].split(" ")[0]);
-    setChBase(p.baseUrl);
-    setChModels(p.models);
-  }
-
   async function doInit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -141,7 +133,6 @@ export function AdminClient() {
     e.preventDefault();
     setBusy(true);
     setNotice(null);
-    const activePreset = PRESETS.find((p) => p.id === preset)!;
     const res = await fetch("/api/admin/channels", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -150,7 +141,22 @@ export function AdminClient() {
         baseUrl: chBase.trim(),
         key: chKey.trim(),
         models: chModels.trim(),
-        protocol: activePreset.protocol,
+        type: chType,
+        mode: chMode,
+        group: chGroup,
+        organization: chOrganization,
+        modelMapping: chModelMapping,
+        priority: chPriority,
+        weight: chWeight,
+        testModel: chTestModel,
+        autoBan: chAutoBan,
+        tag: chTag,
+        remark: chRemark,
+        statusCodeMapping: chStatusMapping,
+        paramOverride: chParamOverride,
+        headerOverride: chHeaderOverride,
+        setting: chSetting,
+        settings: chSettings,
       }),
     });
     const body = await res.json().catch(() => ({}));
@@ -420,67 +426,75 @@ docker compose ps   # 等待 running 状态`}
 
       {/* 新增渠道 */}
       <h2 className="mt-10 text-lg font-semibold">接入新渠道</h2>
-      <form onSubmit={addChannel} className="card mt-3 space-y-4 p-5">
-        <div>
-          <label className="text-xs text-[var(--color-faint)]">上游预设</label>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {PRESETS.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => applyPreset(p.id)}
-                className={`rounded-full border px-3 py-1.5 text-xs transition ${
-                  preset === p.id
-                    ? "border-[var(--color-brand)] bg-[var(--color-brand)]/10 text-[var(--color-text)]"
-                    : "border-[var(--color-border)] text-[var(--color-muted)] hover:border-[#c9d0dc]"
-                }`}
-              >
-                {p.label}
-              </button>
+      <form onSubmit={addChannel} className="card mt-3 space-y-6 p-5">
+        <section>
+          <h3 className="text-sm font-semibold">基本信息</h3>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <label className="text-xs text-[var(--color-faint)]">渠道类型
+              <select value={chType} onChange={(e) => { const type = Number(e.target.value); setChType(type); setChName(channelTypeLabel(type)); }} className="mt-1 block w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 text-sm outline-none">
+                {CHANNEL_TYPE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </label>
+            <label className="text-xs text-[var(--color-faint)]">渠道名称
+              <input value={chName} onChange={(e) => setChName(e.target.value)} className="mt-1 block w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 text-sm outline-none" />
+            </label>
+            <label className="text-xs text-[var(--color-faint)] sm:col-span-2">上游 Base URL（留空使用官方地址）
+              <input value={chBase} onChange={(e) => setChBase(e.target.value)} placeholder="https://api.example.com" className="mt-1 block w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 font-mono text-xs outline-none" />
+            </label>
+          </div>
+        </section>
+
+        <section className="border-t border-[var(--color-border)] pt-5">
+          <h3 className="text-sm font-semibold">凭证</h3>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <label className="text-xs text-[var(--color-faint)]">添加模式
+              <select value={chMode} onChange={(e) => setChMode(e.target.value as typeof chMode)} className="mt-1 block w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 text-sm outline-none">
+                <option value="single">单 Key</option><option value="batch">批量添加（每行一个 Key）</option><option value="multi_to_single">多 Key 单渠道</option>
+              </select>
+            </label>
+            <label className="text-xs text-[var(--color-faint)]">OpenAI Organization（可选）
+              <input value={chOrganization} onChange={(e) => setChOrganization(e.target.value)} className="mt-1 block w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 font-mono text-xs outline-none" />
+            </label>
+            <label className="text-xs text-[var(--color-faint)] sm:col-span-2">API 凭证
+              <textarea value={chKey} onChange={(e) => setChKey(e.target.value)} rows={chMode === "single" ? 2 : 5} placeholder={CHANNEL_KEY_HINTS[chType] || (chMode === "single" ? "输入上游 API Key" : "每行输入一个 API Key")} className="mt-1 block w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 font-mono text-xs outline-none" />
+            </label>
+          </div>
+        </section>
+
+        <section className="border-t border-[var(--color-border)] pt-5">
+          <h3 className="text-sm font-semibold">模型与分组</h3>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <label className="text-xs text-[var(--color-faint)] sm:col-span-2">开放模型（逗号分隔）
+              <textarea value={chModels} onChange={(e) => setChModels(e.target.value)} rows={3} placeholder="model-a,model-b" className="mt-1 block w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 font-mono text-xs outline-none" />
+            </label>
+            <label className="text-xs text-[var(--color-faint)]">用户分组（逗号分隔）
+              <input value={chGroup} onChange={(e) => setChGroup(e.target.value)} className="mt-1 block w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 font-mono text-xs outline-none" />
+            </label>
+            <label className="text-xs text-[var(--color-faint)]">测试模型
+              <input value={chTestModel} onChange={(e) => setChTestModel(e.target.value)} className="mt-1 block w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 font-mono text-xs outline-none" />
+            </label>
+            <label className="text-xs text-[var(--color-faint)] sm:col-span-2">模型映射（JSON）
+              <textarea value={chModelMapping} onChange={(e) => setChModelMapping(e.target.value)} rows={3} placeholder={'{"请求模型":"上游模型"}'} className="mt-1 block w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 font-mono text-xs outline-none" />
+            </label>
+          </div>
+        </section>
+
+        <details className="border-t border-[var(--color-border)] pt-5">
+          <summary className="cursor-pointer text-sm font-semibold">高级设置</summary>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <label className="text-xs text-[var(--color-faint)]">优先级<input type="number" value={chPriority} onChange={(e) => setChPriority(Number(e.target.value))} className="mt-1 block w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5" /></label>
+            <label className="text-xs text-[var(--color-faint)]">权重<input type="number" value={chWeight} onChange={(e) => setChWeight(Number(e.target.value))} className="mt-1 block w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5" /></label>
+            <label className="text-xs text-[var(--color-faint)]">标签<input value={chTag} onChange={(e) => setChTag(e.target.value)} className="mt-1 block w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5" /></label>
+            <label className="flex items-end gap-2 pb-2 text-sm"><input type="checkbox" checked={chAutoBan} onChange={(e) => setChAutoBan(e.target.checked)} />异常时自动禁用</label>
+            {[["状态码映射", chStatusMapping, setChStatusMapping], ["参数覆盖", chParamOverride, setChParamOverride], ["请求头覆盖", chHeaderOverride, setChHeaderOverride], ["渠道运行设置", chSetting, setChSetting], ["类型专用设置", chSettings, setChSettings]] .map(([label, value, setter]) => (
+              <label key={label as string} className="text-xs text-[var(--color-faint)]">{label as string}（JSON）<textarea value={value as string} onChange={(e) => (setter as (value: string) => void)(e.target.value)} rows={3} placeholder="{}" className="mt-1 block w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 font-mono text-xs outline-none" /></label>
             ))}
+            <label className="text-xs text-[var(--color-faint)] sm:col-span-2">备注<textarea value={chRemark} onChange={(e) => setChRemark(e.target.value)} rows={2} className="mt-1 block w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 text-sm outline-none" /></label>
           </div>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="text-xs text-[var(--color-faint)]">渠道名称</label>
-            <input
-              value={chName}
-              onChange={(e) => setChName(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 text-sm outline-none"
-            />
-          </div>
-          <div>
-            <label className="text-xs text-[var(--color-faint)]">上游 Base URL(留空用官方)</label>
-            <input
-              value={chBase}
-              onChange={(e) => setChBase(e.target.value)}
-              placeholder="https://api.deepseek.com"
-              className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 font-mono text-xs outline-none"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="text-xs text-[var(--color-faint)]">上游 API Key</label>
-          <input
-            value={chKey}
-            onChange={(e) => setChKey(e.target.value)}
-            type="password"
-            placeholder="sk-…(去上游官网申请)"
-            className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 font-mono text-xs outline-none"
-          />
-        </div>
-        <div>
-          <label className="text-xs text-[var(--color-faint)]">开放的模型(逗号分隔)</label>
-          <input
-            value={chModels}
-            onChange={(e) => setChModels(e.target.value)}
-            placeholder="deepseek-chat,deepseek-reasoner"
-            className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2.5 font-mono text-xs outline-none"
-          />
-        </div>
+        </details>
         <button
           type="submit"
-          disabled={busy || !chKey.trim()}
+          disabled={busy || !chName.trim() || !chKey.trim() || !chModels.trim()}
           className="rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-700 disabled:opacity-40"
         >
           {busy ? "接入中…" : "接入渠道"}

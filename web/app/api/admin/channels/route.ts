@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionToken, napiFetch } from "@/lib/newapi-server";
-import { channelTypeForProtocol, parseChannelProtocol } from "@/lib/channel-protocol";
+import { parseChannelCreate } from "@/lib/channel-create";
 import {
   isDemo,
   demoUser,
@@ -48,6 +48,7 @@ export async function GET() {
       success: true,
       data: (body.data.items ?? []).map((c) => ({
         id: c.id,
+        type: c.type,
         name: c.name,
         baseUrl: c.base_url,
         models: c.models,
@@ -62,14 +63,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const { name, baseUrl, key, models, protocol } = await req.json().catch(() => ({}));
-  if (!name || !key || !models) {
-    return NextResponse.json({ success: false, message: "名称、Key、模型均必填" }, { status: 400 });
-  }
-  const channelProtocol = parseChannelProtocol(protocol);
-  if (!channelProtocol) {
-    return NextResponse.json({ success: false, message: "不支持的渠道协议" }, { status: 400 });
-  }
+  const parsed = parseChannelCreate(await req.json().catch(() => null));
+  if (!parsed.ok) return NextResponse.json({ success: false, message: parsed.message }, { status: 400 });
+  const channel = parsed.payload.channel as Record<string, unknown>;
 
   if (isDemo()) {
     const user = await demoUser();
@@ -78,7 +74,16 @@ export async function POST(req: Request) {
     const id = (list.at(-1)?.id ?? 0) + 1;
     const next: DemoChannel[] = [
       ...list,
-      { id, name, baseUrl: baseUrl || "", models, enabled: true, usedQuota: 0, responseTimeMs: 0 },
+      {
+        id,
+        name: String(channel.name),
+        baseUrl: String(channel.base_url || ""),
+        models: String(channel.models),
+        protocol: "openai",
+        enabled: true,
+        usedQuota: 0,
+        responseTimeMs: 0,
+      },
     ];
     const res = NextResponse.json({ success: true });
     res.cookies.set(DEMO_CH_COOKIE, JSON.stringify(next), COOKIE_OPTS);
@@ -93,19 +98,7 @@ export async function POST(req: Request) {
       "/api/channel/",
       {
         method: "POST",
-        body: JSON.stringify({
-          mode: "single",
-          channel: {
-            type: channelTypeForProtocol(channelProtocol),
-            name,
-            key,
-            base_url: baseUrl || "",
-            models,
-            groups: ["default"],
-            model_mapping: "",
-            priority: 0,
-          },
-        }),
+        body: JSON.stringify(parsed.payload),
       },
       token,
     );

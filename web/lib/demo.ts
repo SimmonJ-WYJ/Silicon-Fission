@@ -3,6 +3,7 @@
 // 一旦 NEWAPI_BASE 指向真实后端,自动切回真实模式,页面无需改动。
 
 import { cookies } from "next/headers";
+import type { ChannelProtocol } from "@/lib/channel-protocol";
 
 export const DEMO_COOKIE = "sf_demo";
 export const DEMO_USER_COOKIE = "sf_demo_user";
@@ -29,6 +30,7 @@ export interface DemoChannel {
   name: string;
   baseUrl: string;
   models: string;
+  protocol: ChannelProtocol;
   enabled: boolean;
   usedQuota: number;
   responseTimeMs: number;
@@ -59,6 +61,7 @@ const SEED_CHANNELS: DemoChannel[] = [
     name: "DeepSeek(示例)",
     baseUrl: "https://api.deepseek.com",
     models: "deepseek-chat,deepseek-reasoner",
+    protocol: "openai",
     enabled: true,
     usedQuota: 0,
     responseTimeMs: 320,
@@ -70,7 +73,13 @@ export async function demoChannels(): Promise<DemoChannel[]> {
   const raw = jar.get(DEMO_CH_COOKIE)?.value;
   if (!raw) return SEED_CHANNELS;
   try {
-    return JSON.parse(raw) as DemoChannel[];
+    const channels = JSON.parse(raw) as Array<
+      Omit<DemoChannel, "protocol"> & { protocol?: ChannelProtocol }
+    >;
+    return channels.map((channel) => ({
+      ...channel,
+      protocol: channel.protocol ?? "openai",
+    }));
   } catch {
     return SEED_CHANNELS;
   }
