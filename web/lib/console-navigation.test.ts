@@ -18,10 +18,10 @@ test("exposes only implemented console destinations", () => {
       "/docs",
       "/topup",
       "/settings",
+      "/logs",
       "/admin",
       "/admin/pricing",
       "/admin/users",
-      "/admin/logs",
       "/admin/system",
     ],
   );

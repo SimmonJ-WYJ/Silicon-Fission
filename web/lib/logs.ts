@@ -135,6 +135,22 @@ export function toNewApiLogStatPath(query: LogQuery): string {
   return qs ? `/api/log/stat?${qs}` : "/api/log/stat";
 }
 
+export function toNewApiSelfLogPath(query: LogQuery): string {
+  const search = filterParams(query);
+  search.delete("username");
+  search.delete("channel");
+  search.set("p", String(query.page));
+  search.set("page_size", String(query.pageSize));
+  return `/api/log/self?${search.toString()}`;
+}
+
+export function toNewApiSelfLogStatPath(query: LogQuery): string {
+  const search = filterParams(query);
+  search.delete("username");
+  const qs = search.toString();
+  return qs ? `/api/log/self/stat?${qs}` : "/api/log/self/stat";
+}
+
 export function quotaToUsd(quota: number): number {
   if (!Number.isFinite(quota)) return 0;
   return quota / QUOTA_PER_USD;

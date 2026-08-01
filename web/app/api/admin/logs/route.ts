@@ -8,6 +8,8 @@ import {
   tokensPerSecond,
   toNewApiLogPath,
   toNewApiLogStatPath,
+  toNewApiSelfLogPath,
+  toNewApiSelfLogStatPath,
   type LogQuery,
 } from "@/lib/logs";
 
@@ -102,7 +104,7 @@ function filterDemoLogs(logs: NapiLog[], query: LogQuery): NapiLog[] {
   });
 }
 
-export async function GET(req: Request) {
+export async function handleLogsRequest(req: Request, scope: "admin" | "self") {
   const query = parseLogQuery(new URL(req.url).searchParams);
 
   if (isDemo()) {
@@ -132,14 +134,14 @@ export async function GET(req: Request) {
   const failed = { status: 502, body: { success: false, message: "无法连接 new-api 后端" } as const };
   // 列表和统计互不依赖,并发取
   const [list, stat] = await Promise.all([
-    napiFetch<NapiLogPage>(toNewApiLogPath(query), {}, token).catch(() => failed),
-    napiFetch<NapiLogStat>(toNewApiLogStatPath(query), {}, token).catch(() => failed),
+    napiFetch<NapiLogPage>(scope === "self" ? toNewApiSelfLogPath(query) : toNewApiLogPath(query), {}, token).catch(() => failed),
+    napiFetch<NapiLogStat>(scope === "self" ? toNewApiSelfLogStatPath(query) : toNewApiLogStatPath(query), {}, token).catch(() => failed),
   ]);
 
   if (!list.body.success || !list.body.data) {
     return NextResponse.json(
-      { success: false, message: list.body.message || "获取日志失败(需要管理员账号)" },
-      { status: 403 },
+      { success: false, message: list.body.message || "获取调用日志失败" },
+      { status: list.status === 401 ? 401 : 403 },
     );
   }
 
@@ -162,4 +164,8 @@ export async function GET(req: Request) {
         }
       : null,
   });
+}
+
+export async function GET(req: Request) {
+  return handleLogsRequest(req, "admin");
 }

@@ -45,6 +45,7 @@ export const CONSOLE_NAV_SECTIONS: ConsoleNavSection[] = [
     items: [
       { id: "credits", label: "充值与余额", href: "/topup", icon: "credits" },
       { id: "settings", label: "账号设置", href: "/settings", icon: "settings" },
+      { id: "logs", label: "调用日志", href: "/logs", icon: "logs" },
     ],
   },
   {
@@ -55,7 +56,6 @@ export const CONSOLE_NAV_SECTIONS: ConsoleNavSection[] = [
       { id: "channels", label: "渠道配置", href: "/admin", icon: "channels" },
       { id: "pricing", label: "倍率配置", href: "/admin/pricing", icon: "pricing", minRole: 100 },
       { id: "users", label: "用户管理", href: "/admin/users", icon: "users" },
-      { id: "logs", label: "调用日志", href: "/admin/logs", icon: "logs" },
       { id: "system", label: "系统设置", href: "/admin/system", icon: "system", minRole: 100 },
     ],
   },

@@ -55,7 +55,7 @@ function formatCost(usd: number): string {
   return fmtDualCurrency(usd, digits, digits);
 }
 
-export function LogsClient() {
+export function LogsClient({ endpoint = "/api/admin/logs" }: { endpoint?: string }) {
   const [logs, setLogs] = useState<AdminLog[]>([]);
   const [stat, setStat] = useState<LogStat | null>(null);
   const [total, setTotal] = useState(0);
@@ -86,7 +86,7 @@ export function LogsClient() {
     if (end) params.set("end", end);
 
     try {
-      const res = await fetch(`/api/admin/logs?${params.toString()}`, { cache: "no-store" });
+      const res = await fetch(`${endpoint}?${params.toString()}`, { cache: "no-store" });
       const body = await res.json();
       if (!body.success) {
         setError(body.message || "加载失败");
@@ -108,7 +108,7 @@ export function LogsClient() {
     }
     // applied 变化即代表用户点了查询,依赖它来触发重新拉取
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, applied]);
+  }, [page, applied, endpoint]);
 
   useEffect(() => {
     void load();

@@ -12,6 +12,8 @@ import {
   tokensPerSecond,
   toNewApiLogPath,
   toNewApiLogStatPath,
+  toNewApiSelfLogPath,
+  toNewApiSelfLogStatPath,
 } from "./logs.ts";
 
 function query(qs: string) {
@@ -105,6 +107,14 @@ test("stat path shares the filters but never paginates", () => {
 
 test("stat path has no query string when nothing is filtered", () => {
   assert.equal(toNewApiLogStatPath(query("")), "/api/log/stat");
+});
+
+test("self log paths use user-scoped New API endpoints", () => {
+  const list = toNewApiSelfLogPath(query("username=other&channel=4&modelName=gpt-5.6-sol"));
+  assert.match(list, /^\/api\/log\/self\?/);
+  assert.equal(list.includes("username"), false);
+  assert.equal(list.includes("channel"), false);
+  assert.equal(toNewApiSelfLogStatPath(query("username=other")), "/api/log/self/stat");
 });
 
 test("converts quota to usd with new-api's 500000-per-dollar unit", () => {
