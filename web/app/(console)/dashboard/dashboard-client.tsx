@@ -9,6 +9,7 @@ import {
   type ApiKeyItem,
   type Me,
 } from "@/lib/api";
+import { DISPLAY_USD_TO_CNY, fmtDualCurrency } from "@/lib/format";
 
 export function DashboardClient() {
   const [loading, setLoading] = useState(true);
@@ -137,7 +138,8 @@ export function DashboardClient() {
       <div className="mt-4 grid gap-4 sm:grid-cols-3">
         <div className="card bg-gradient-to-br from-[var(--color-brand)]/15 to-transparent p-5">
           <div className="text-xs text-[var(--color-faint)]">账户余额</div>
-          <div className="mt-1 text-3xl font-semibold">${me.balanceUsd}</div>
+          <div className="mt-1 text-3xl font-semibold">¥{(me.balanceUsd * DISPLAY_USD_TO_CNY).toFixed(2)}</div>
+          <div className="mt-1 text-xs text-[var(--color-muted)]">${me.balanceUsd.toFixed(4)} USD</div>
           <a
             href="/topup"
             className="mt-3 inline-block rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-700"
@@ -149,7 +151,7 @@ export function DashboardClient() {
           <div className="text-xs text-[var(--color-faint)]">API Keys</div>
           <div className="mt-1 text-3xl font-semibold">{keys.length}</div>
           <div className="mt-3 text-xs text-[var(--color-muted)]">
-            累计消费 ${keys.reduce((s, k) => s + k.usedUsd, 0).toFixed(4)}
+            累计消费 {fmtDualCurrency(keys.reduce((s, k) => s + k.usedUsd, 0))}
           </div>
         </div>
         <div className="card p-5">
@@ -212,7 +214,7 @@ export function DashboardClient() {
                 <td className="px-4 py-2.5 font-mono text-xs text-[var(--color-muted)]">
                   {k.maskedKey}
                 </td>
-                <td className="px-4 py-2.5">${k.usedUsd}</td>
+                <td className="px-4 py-2.5">{fmtDualCurrency(k.usedUsd)}</td>
                 <td className="px-4 py-2.5 text-[var(--color-muted)]">{k.createdAt}</td>
                 <td className="px-4 py-2.5 text-right text-xs text-[var(--color-faint)]">
                   仅创建时可见

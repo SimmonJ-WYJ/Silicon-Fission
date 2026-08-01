@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { fetchMe, type Me } from "@/lib/api";
+import { fmtDualCurrency } from "@/lib/format";
 
 export function NavAuth() {
   const [me, setMe] = useState<Me | null>(null);
@@ -59,7 +60,7 @@ export function NavAuth() {
           {open && (
             <div className="absolute right-0 mt-2 w-44 overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] py-1 shadow-lg">
               <div className="border-b border-[var(--color-border-soft)] px-3 py-2 text-xs text-[var(--color-faint)]">
-                余额 <span className="text-[var(--color-text)]">${me.balanceUsd}</span>
+                余额 <span className="text-[var(--color-text)]">{fmtDualCurrency(me.balanceUsd)}</span>
               </div>
               <a href="/dashboard" className="block px-3 py-2 text-sm hover:bg-[var(--color-panel)]">
                 控制台

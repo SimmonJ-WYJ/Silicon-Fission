@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { formatUseTime, logTypeOptions, LOG_TYPE_ERROR, LOG_TYPE_TOPUP } from "@/lib/logs";
+import { fmtDualCurrency } from "@/lib/format";
 
 interface AdminLog {
   id: number;
@@ -47,10 +48,11 @@ function formatTime(seconds: number): string {
   return new Date(seconds * 1000).toLocaleString("zh-CN", { hour12: false });
 }
 
-/** 只在有值时显示金额,避免整列都是 $0.000000 */
+/** 只在有值时显示金额，避免整列都是零。 */
 function formatCost(usd: number): string {
   if (!usd) return "-";
-  return `$${usd < 0.01 ? usd.toFixed(6) : usd.toFixed(4)}`;
+  const digits = usd < 0.01 ? 6 : 4;
+  return fmtDualCurrency(usd, digits, digits);
 }
 
 export function LogsClient() {
@@ -213,7 +215,7 @@ export function LogsClient() {
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <div className="card p-4">
             <p className="text-xs text-[var(--color-faint)]">当前筛选消费</p>
-            <p className="mt-1 text-xl font-semibold">${stat.costUsd.toFixed(4)}</p>
+            <p className="mt-1 text-xl font-semibold">{fmtDualCurrency(stat.costUsd)}</p>
           </div>
           <div className="card p-4">
             <p className="text-xs text-[var(--color-faint)]">RPM(每分钟请求)</p>

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { USER_ROLE_ADMIN, USER_ROLE_COMMON } from "@/lib/user-admin";
+import { fmtDualCurrency } from "@/lib/format";
 
 interface AdminUser {
   id: number;
@@ -192,7 +193,7 @@ export function UsersClient() {
       setNotice(
         body.demo
           ? "演示模式:额度未真正变动"
-          : `已为「${quotaUser.username}」${verb} $${amount}`,
+          : `已为「${quotaUser.username}」${verb} ${fmtDualCurrency(Number(amount))}`,
       );
       await load();
     } catch {
@@ -351,8 +352,8 @@ export function UsersClient() {
                     )}
                   </td>
                   <td className={`px-3 py-2.5 ${roleColor(u.role)}`}>{u.roleLabel}</td>
-                  <td className="px-3 py-2.5">${u.balanceUsd}</td>
-                  <td className="px-3 py-2.5 text-[var(--color-muted)]">${u.usedUsd}</td>
+                  <td className="px-3 py-2.5">{fmtDualCurrency(u.balanceUsd)}</td>
+                  <td className="px-3 py-2.5 text-[var(--color-muted)]">{fmtDualCurrency(u.usedUsd)}</td>
                   <td className="px-3 py-2.5">
                     <span
                       className={
@@ -446,7 +447,7 @@ export function UsersClient() {
               </span>
             </h3>
             <p className="mt-1 text-xs text-[var(--color-muted)]">
-              当前余额 ${quotaUser.balanceUsd}
+              当前余额 {fmtDualCurrency(quotaUser.balanceUsd)}
             </p>
 
             <div className="mt-4 flex gap-2">

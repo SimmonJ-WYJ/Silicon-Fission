@@ -1,6 +1,13 @@
+export const DISPLAY_USD_TO_CNY = 7.2;
+
+/** 用户界面统一使用人民币主价、美元参考价。 */
+export function fmtDualCurrency(usd: number, usdDigits = 4, cnyDigits = 2): string {
+  return `¥${(usd * DISPLAY_USD_TO_CNY).toFixed(cnyDigits)} ($${usd.toFixed(usdDigits)})`;
+}
+
 export function fmtPrice(perMillion: number): string {
   if (perMillion === 0) return "免费";
-  return `$${perMillion.toFixed(2)}`;
+  return fmtDualCurrency(perMillion, 2, 2);
 }
 
 export function fmtTokens(n: number): string {
