@@ -6,6 +6,7 @@ import {
   parseRatioJson,
   ratioToUsdPerMillion,
   rowPriceUsdPerMillion,
+  usdToCny,
   toPricingRows,
   validatePricingRow,
   type ModelPricingRow,
@@ -80,6 +81,11 @@ test("skips blank model names and trims the rest", () => {
 test("converts a ratio to usd per million tokens", () => {
   assert.equal(ratioToUsdPerMillion(1), 2);
   assert.equal(ratioToUsdPerMillion(2.5), 5);
+});
+
+test("converts displayed USD prices to RMB at the configured rate", () => {
+  assert.equal(usdToCny(1), 7.2);
+  assert.ok(Math.abs(usdToCny(0.002) - 0.0144) < Number.EPSILON);
 });
 
 test("treats a missing output ratio as 1x the input price", () => {

@@ -8,6 +8,9 @@
 /** new-api 的基准价：倍率 1 = $0.002 / 1K tokens */
 export const BASE_PRICE_PER_1K = 0.002;
 
+/** 展示汇率；New API 的实际结算仍以美元等值额度为准。 */
+export const USD_TO_CNY = 7.2;
+
 export interface ModelPricingRow {
   model: string;
   /** 输入倍率，null 表示未配置 */
@@ -76,6 +79,10 @@ export function fromPricingRows(rows: ModelPricingRow[]): PricingTables {
 /** 倍率换算成「每百万 token 多少美元」，给 UI 显示真实价格用 */
 export function ratioToUsdPerMillion(ratio: number): number {
   return ratio * BASE_PRICE_PER_1K * 1000;
+}
+
+export function usdToCny(usd: number): number {
+  return usd * USD_TO_CNY;
 }
 
 /** 计算某一行的实际单价，返回 null 表示该模型未配置价格 */

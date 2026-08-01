@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   rowPriceUsdPerMillion,
+  usdToCny,
+  USD_TO_CNY,
   validatePricingRow,
   type ModelPricingRow,
 } from "@/lib/pricing";
@@ -23,8 +25,8 @@ function fieldText(value: number | null): string {
   return value === null || Number.isNaN(value) ? "" : String(value);
 }
 
-function usd(value: number): string {
-  return `$${value.toFixed(2)}`;
+function dualCurrency(usd: number): string {
+  return `$${usd.toFixed(2)} / ¥${usdToCny(usd).toFixed(2)}`;
 }
 
 export function PricingClient() {
@@ -171,8 +173,8 @@ export function PricingClient() {
                 <th className="px-4 py-3 font-normal">模型</th>
                 <th className="w-28 px-3 py-3 font-normal">输入倍率</th>
                 <th className="w-28 px-3 py-3 font-normal">输出倍率</th>
-                <th className="w-32 px-3 py-3 font-normal">按次单价($)</th>
-                <th className="w-44 px-3 py-3 font-normal">实际单价 / 1M tokens</th>
+                <th className="w-32 px-3 py-3 font-normal">按次单价($ / ¥)</th>
+                <th className="w-56 px-3 py-3 font-normal">实际单价 / 1M tokens（$ / ¥）</th>
                 <th className="w-16 px-3 py-3 font-normal"></th>
               </tr>
             </thead>
@@ -226,10 +228,10 @@ export function PricingClient() {
                     </td>
                     <td className="px-3 py-2 text-xs text-[var(--color-muted)]">
                       {row.perCallPrice !== null ? (
-                        <span>按次 {usd(row.perCallPrice)}</span>
+                        <span>按次 {dualCurrency(row.perCallPrice)}</span>
                       ) : price ? (
                         <span className="font-mono">
-                          入 {usd(price.input)} / 出 {usd(price.output)}
+                          入 {dualCurrency(price.input)} / 出 {dualCurrency(price.output)}
                         </span>
                       ) : (
                         <span className="text-[var(--color-faint)]">未配置</span>
@@ -253,7 +255,7 @@ export function PricingClient() {
       )}
 
       <p className="mt-4 text-xs text-[var(--color-faint)]">
-        输出倍率留空按 1 倍算(即输出与输入同价)。填了按次单价后,该模型忽略 token 倍率,按调用次数计费。
+        输出倍率留空按 1 倍算。人民币金额按 1 USD ≈ ¥{USD_TO_CNY} 展示，仅作参考；实际结算仍按 New API 美元等值额度执行。填了按次单价后,该模型忽略 token 倍率,按调用次数计费。
       </p>
     </div>
   );
