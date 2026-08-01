@@ -65,7 +65,11 @@ export interface ApiKeyItem {
 }
 
 export async function fetchMe(): Promise<Me | null> {
-  const res = await fetch("/api/me");
+  let res = await fetch("/api/me");
+  if (res.status === 401) {
+    const refreshed = await fetch("/api/auth/refresh", { method: "POST" });
+    if (refreshed.ok) res = await fetch("/api/me");
+  }
   if (!res.ok) return null;
   const body = await res.json();
   return body.success ? (body.data as Me) : null;

@@ -36,7 +36,7 @@ export interface DemoChannel {
   responseTimeMs: number;
 }
 
-export const COOKIE_OPTS = { httpOnly: true, sameSite: "lax" as const, path: "/", maxAge: 86400 };
+export const COOKIE_OPTS = { httpOnly: true, sameSite: "lax" as const, path: "/", maxAge: 7 * 24 * 60 * 60 };
 
 export async function demoUser(): Promise<string | null> {
   const jar = await cookies();

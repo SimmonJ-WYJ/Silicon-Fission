@@ -8,6 +8,9 @@ export { QUOTA_PER_USD } from "./quota-adjustment";
 export const NEWAPI_BASE = process.env.NEWAPI_BASE ?? "http://localhost:3000";
 
 export const TOKEN_COOKIE = "sf_token";
+export const REFRESH_COOKIE = "sf_refresh";
+export const UPSTREAM_REFRESH_COOKIE = "new_api_refresh";
+export const SESSION_MAX_AGE = 7 * 24 * 60 * 60;
 
 export interface NapiResult<T = unknown> {
   success: boolean;
@@ -20,7 +23,7 @@ export async function napiFetch<T = unknown>(
   path: string,
   init: RequestInit = {},
   bearer?: string,
-): Promise<{ status: number; body: NapiResult<T> }> {
+): Promise<{ status: number; body: NapiResult<T>; headers: Headers }> {
   const headers = new Headers(init.headers);
   headers.set("Content-Type", "application/json");
   if (bearer) headers.set("Authorization", `Bearer ${bearer}`);
@@ -31,8 +34,22 @@ export async function napiFetch<T = unknown>(
   } catch {
     body = { success: false, message: `Upstream returned non-JSON (HTTP ${res.status})` };
   }
-  return { status: res.status, body };
+  return { status: res.status, body, headers: res.headers };
 }
+
+export function readUpstreamRefreshCookie(headers: Headers): string | null {
+  const setCookie = headers.get("set-cookie") ?? "";
+  const match = setCookie.match(/(?:^|,\s*)new_api_refresh=([^;]+)/);
+  return match?.[1] ? decodeURIComponent(match[1]) : null;
+}
+
+export const SESSION_COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: "lax" as const,
+  secure: process.env.NODE_ENV === "production",
+  path: "/",
+  maxAge: SESSION_MAX_AGE,
+};
 
 /** 从请求 cookie 里取出登录时保存的 access_token */
 export async function getSessionToken(): Promise<string | null> {

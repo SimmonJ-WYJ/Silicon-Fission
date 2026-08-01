@@ -3,6 +3,7 @@ import "./globals.css";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { isDemo } from "@/lib/demo";
+import { SessionKeeper } from "@/components/session-keeper";
 
 export const metadata: Metadata = {
   title: "硅基裂变 · Silicon Fission — 统一大模型 API 网关",
@@ -14,6 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh-CN">
       <body>
+        <SessionKeeper />
         {isDemo() && (
           <div className="bg-[var(--color-brand)] px-4 py-1.5 text-center text-xs text-white">
             演示模式 · 登录/工作台数据均为示例,可自由体验界面;配置真实后端(NEWAPI_BASE)后自动切换为真实数据
