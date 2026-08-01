@@ -8,12 +8,13 @@ Silicon Fission 是一个 LLM 统一 API 网关(OpenRouter 竞品):OpenAI 兼容
 
 | 用途 | 地址 |
 |---|---|
-| 🌐 官网 / 用户控制台(前台) | https://siliconfission.com |
-| 🔌 API 网关 / 管理后台(new-api) | https://api.siliconfission.com |
+| 🌐 用户与管理配置平台(New API 原生前端) | https://siliconfission.com |
+| ↪️ www 入口(永久跳转到主域名) | https://www.siliconfission.com |
+| 🔌 API 网关(程序调用) | https://api.siliconfission.com |
 
-> 前台部署在 Vercel(自动 HTTPS),后端 API 网关部署在 VPS / 出海节点(Caddy 自动 HTTPS)。`www.siliconfission.com` 会 308 跳转到主域名。旧地址 `silicon-fission.vercel.app` 仅作历史保留。
+> 全部服务部署在 VPS,由 Caddy 自动签发 HTTPS 证书。主域名直接呈现 New API 原生界面:普通用户在这里注册、拿 Key、看用量,管理员在这里配置渠道、模型和额度。`www` 会永久跳转到主域名。旧的自研 Next.js 前端(`web/`)已下线,历史代码仍在 git 记录中。
 
-- 🚦 **正式上线手册(Vercel + VPS 生产部署)**:[docs/go-live.md](docs/go-live.md)
+- 🚦 **正式上线手册(VPS 生产部署)**:[docs/go-live.md](docs/go-live.md)
 - 📘 **功能文档(所有已实现功能总览)**:[docs/FEATURES.md](docs/FEATURES.md)
 - 🧑‍💼 **模型供应商接入指南(新人 onboarding)**:[docs/provider-onboarding.md](docs/provider-onboarding.md)
 - 🚀 快速起站部署(让中国用户不翻墙用国外模型):[docs/deployment.md](docs/deployment.md)
@@ -24,7 +25,8 @@ Silicon Fission 是一个 LLM 统一 API 网关(OpenRouter 竞品):OpenAI 兼容
 
 - **`deploy/` — 快速起站**:基于 [new-api](https://github.com/QuantumNous/new-api) 官方镜像(不改源码,规避 AGPL),一两天上线一个可对外收费的中转站,用于验证需求、跑现金流。详见 [部署指南](docs/deployment.md)。
 - **`gateway/` — 自研网关**:可闭源、可差异化、可卖给企业的长期资产。等 new-api 验证市场后再加大投入。
-- **`web/` — Web 控制台**:OpenRouter 风格的前端(Next.js + Tailwind,白色主题),首页 / 模型市场 / 对话 Playground / 登录注册 / 控制台 / 渠道配置 / 充值,通过 API 对接后端。内置**演示模式**——不配后端也能完整体验登录到工作台的全流程。**这是你自己的闭源前端资产**。详见 [web/README.md](web/README.md) 与 [功能文档](docs/FEATURES.md)。
+
+> 自研 Next.js 前端(`web/`)已于 2026-08-01 下线,主站改用 New API 原生界面,用户配置与管理配置合并在同一个平台。需要找回旧前端时从 git 历史恢复。
 
 ## 当前状态
 

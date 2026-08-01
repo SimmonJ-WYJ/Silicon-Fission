@@ -1,10 +1,14 @@
 # Caddy 为每个站点自动申请并续期 Let's Encrypt 证书。
 # DOMAIN 由 .env 注入(如 siliconfission.com)。
 
-# new-api 管理后台
+# 主站统一使用 new-api 原生前端；www 永久跳转到主域名。
+www.{$DOMAIN} {
+    redir https://{$DOMAIN}{uri} permanent
+}
+
 {$DOMAIN} {
-	encode gzip
-	reverse_proxy new-api:3000
+    encode gzip
+    reverse_proxy new-api:3000
 }
 
 # 自定义网关:统一 OpenAI 兼容 API 入口
