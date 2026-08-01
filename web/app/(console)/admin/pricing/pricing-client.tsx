@@ -12,14 +12,6 @@ import {
 const INPUT_CLASS =
   "w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-panel)] px-3 py-2 font-mono text-xs outline-none";
 
-/** 输入框文本 -> 倍率值。空串表示"不配置",转成 null */
-function parseField(raw: string): number | null {
-  const trimmed = raw.trim();
-  if (!trimmed) return null;
-  const n = Number(trimmed);
-  return Number.isFinite(n) ? n : NaN;
-}
-
 /** 倍率值 -> 输入框文本 */
 function fieldText(value: number | null): string {
   return value === null || Number.isNaN(value) ? "" : String(value);
@@ -36,6 +28,7 @@ export function PricingClient() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [filter, setFilter] = useState("");
+  const [draftFields, setDraftFields] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -48,6 +41,7 @@ export function PricingClient() {
         setRows([]);
       } else {
         setRows(body.data as ModelPricingRow[]);
+        setDraftFields({});
       }
     } catch {
       setError("网络错误,无法加载倍率配置");
@@ -64,6 +58,30 @@ export function PricingClient() {
   function updateRow(index: number, patch: Partial<ModelPricingRow>) {
     setRows((prev) => prev.map((r, i) => (i === index ? { ...r, ...patch } : r)));
     setNotice(null);
+  }
+
+  function updateNumericField(
+    index: number,
+    field: "inputRatio" | "outputRatio" | "perCallPrice",
+    raw: string,
+  ) {
+    const key = `${index}:${field}`;
+    setDraftFields((prev) => ({ ...prev, [key]: raw }));
+    const trimmed = raw.trim();
+    if (!trimmed) {
+      updateRow(index, { [field]: null });
+      return;
+    }
+    // Keep incomplete-but-valid decimal text (2., .5) in the draft while
+    // updating the numeric row as soon as it can be parsed.
+    if (/^-?(?:\d+(?:\.\d*)?|\.\d+)$/.test(trimmed)) {
+      const value = Number(trimmed);
+      if (Number.isFinite(value)) updateRow(index, { [field]: value });
+    }
+  }
+
+  function numericFieldText(index: number, field: "inputRatio" | "outputRatio" | "perCallPrice", value: number | null) {
+    return draftFields[`${index}:${field}`] ?? fieldText(value);
   }
 
   function addRow() {
@@ -200,28 +218,24 @@ export function PricingClient() {
                     </td>
                     <td className="px-3 py-2">
                       <input
-                        value={fieldText(row.inputRatio)}
-                        onChange={(e) => updateRow(index, { inputRatio: parseField(e.target.value) })}
+                        value={numericFieldText(index, "inputRatio", row.inputRatio)}
+                        onChange={(e) => updateNumericField(index, "inputRatio", e.target.value)}
                         placeholder="—"
                         className={INPUT_CLASS}
                       />
                     </td>
                     <td className="px-3 py-2">
                       <input
-                        value={fieldText(row.outputRatio)}
-                        onChange={(e) =>
-                          updateRow(index, { outputRatio: parseField(e.target.value) })
-                        }
+                        value={numericFieldText(index, "outputRatio", row.outputRatio)}
+                        onChange={(e) => updateNumericField(index, "outputRatio", e.target.value)}
                         placeholder="1"
                         className={INPUT_CLASS}
                       />
                     </td>
                     <td className="px-3 py-2">
                       <input
-                        value={fieldText(row.perCallPrice)}
-                        onChange={(e) =>
-                          updateRow(index, { perCallPrice: parseField(e.target.value) })
-                        }
+                        value={numericFieldText(index, "perCallPrice", row.perCallPrice)}
+                        onChange={(e) => updateNumericField(index, "perCallPrice", e.target.value)}
                         placeholder="—"
                         className={INPUT_CLASS}
                       />
