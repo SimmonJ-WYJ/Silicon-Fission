@@ -88,6 +88,21 @@ test("converts displayed USD prices to RMB at the configured rate", () => {
   assert.ok(Math.abs(usdToCny(0.002) - 0.0144) < Number.EPSILON);
 });
 
+test("round-trips cache hit and cache creation ratios", () => {
+  const rows = toPricingRows({
+    modelRatio: { "gpt-5.6-sol": 0.292 },
+    completionRatio: {},
+    modelPrice: {},
+    cacheRatio: { "gpt-5.6-sol": 0.08 },
+    createCacheRatio: { "gpt-5.6-sol": 1.25 },
+  });
+  assert.equal(rows[0].cacheRatio, 0.08);
+  assert.equal(rows[0].createCacheRatio, 1.25);
+  const tables = fromPricingRows(rows);
+  assert.deepEqual(tables.cacheRatio, { "gpt-5.6-sol": 0.08 });
+  assert.deepEqual(tables.createCacheRatio, { "gpt-5.6-sol": 1.25 });
+});
+
 test("treats a missing output ratio as 1x the input price", () => {
   const row: ModelPricingRow = {
     model: "x",

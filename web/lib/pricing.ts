@@ -19,12 +19,18 @@ export interface ModelPricingRow {
   outputRatio: number | null;
   /** 按次计费单价（美元），非 null 时优先于倍率 */
   perCallPrice: number | null;
+  /** 缓存命中倍率（相对输入倍率） */
+  cacheRatio?: number | null;
+  /** 缓存写入倍率（相对输入倍率） */
+  createCacheRatio?: number | null;
 }
 
 export interface PricingTables {
   modelRatio: Record<string, number>;
   completionRatio: Record<string, number>;
   modelPrice: Record<string, number>;
+  cacheRatio?: Record<string, number>;
+  createCacheRatio?: Record<string, number>;
 }
 
 /** 解析 option 里的 JSON 字符串，坏数据一律当空表处理，不让整页崩掉 */
@@ -49,14 +55,21 @@ export function toPricingRows(tables: PricingTables): ModelPricingRow[] {
     ...Object.keys(tables.modelRatio),
     ...Object.keys(tables.completionRatio),
     ...Object.keys(tables.modelPrice),
+    ...Object.keys(tables.cacheRatio ?? {}),
+    ...Object.keys(tables.createCacheRatio ?? {}),
   ]);
 
-  return [...models].sort().map((model) => ({
-    model,
-    inputRatio: tables.modelRatio[model] ?? null,
-    outputRatio: tables.completionRatio[model] ?? null,
-    perCallPrice: tables.modelPrice[model] ?? null,
-  }));
+  return [...models].sort().map((model) => {
+    const row: ModelPricingRow = {
+      model,
+      inputRatio: tables.modelRatio[model] ?? null,
+      outputRatio: tables.completionRatio[model] ?? null,
+      perCallPrice: tables.modelPrice[model] ?? null,
+    };
+    if (tables.cacheRatio?.[model] !== undefined) row.cacheRatio = tables.cacheRatio[model];
+    if (tables.createCacheRatio?.[model] !== undefined) row.createCacheRatio = tables.createCacheRatio[model];
+    return row;
+  });
 }
 
 /** 行列表还原成三张表，null 的字段不写回（等于从 option 里删掉该模型） */
@@ -64,6 +77,8 @@ export function fromPricingRows(rows: ModelPricingRow[]): PricingTables {
   const modelRatio: Record<string, number> = {};
   const completionRatio: Record<string, number> = {};
   const modelPrice: Record<string, number> = {};
+  const cacheRatio: Record<string, number> = {};
+  const createCacheRatio: Record<string, number> = {};
 
   for (const row of rows) {
     const model = row.model.trim();
@@ -71,9 +86,14 @@ export function fromPricingRows(rows: ModelPricingRow[]): PricingTables {
     if (row.inputRatio !== null) modelRatio[model] = row.inputRatio;
     if (row.outputRatio !== null) completionRatio[model] = row.outputRatio;
     if (row.perCallPrice !== null) modelPrice[model] = row.perCallPrice;
+    if (row.cacheRatio != null) cacheRatio[model] = row.cacheRatio;
+    if (row.createCacheRatio != null) createCacheRatio[model] = row.createCacheRatio;
   }
 
-  return { modelRatio, completionRatio, modelPrice };
+  const result: PricingTables = { modelRatio, completionRatio, modelPrice };
+  if (Object.keys(cacheRatio).length) result.cacheRatio = cacheRatio;
+  if (Object.keys(createCacheRatio).length) result.createCacheRatio = createCacheRatio;
+  return result;
 }
 
 /** 倍率换算成「每百万 token 多少美元」，给 UI 显示真实价格用 */
@@ -104,6 +124,8 @@ export function validatePricingRow(row: ModelPricingRow): string | null {
     ["输入倍率", row.inputRatio],
     ["输出倍率", row.outputRatio],
     ["按次单价", row.perCallPrice],
+    ["缓存命中倍率", row.cacheRatio ?? null],
+    ["缓存写入倍率", row.createCacheRatio ?? null],
   ] as const) {
     if (value === null) continue;
     if (!Number.isFinite(value)) return `${label}必须是数字`;

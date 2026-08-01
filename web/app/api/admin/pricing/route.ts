@@ -28,6 +28,8 @@ function readTables(options: NapiOption[]) {
     modelRatio: parseRatioJson(byKey.get("ModelRatio")),
     completionRatio: parseRatioJson(byKey.get("CompletionRatio")),
     modelPrice: parseRatioJson(byKey.get("ModelPrice")),
+    cacheRatio: parseRatioJson(byKey.get("CacheRatio")),
+    createCacheRatio: parseRatioJson(byKey.get("CreateCacheRatio")),
   };
 }
 
@@ -101,6 +103,8 @@ export async function PUT(req: Request) {
     { key: "ModelRatio", value: JSON.stringify(tables.modelRatio) },
     { key: "CompletionRatio", value: JSON.stringify(tables.completionRatio) },
     { key: "ModelPrice", value: JSON.stringify(tables.modelPrice) },
+    { key: "CacheRatio", value: JSON.stringify(tables.cacheRatio ?? {}) },
+    { key: "CreateCacheRatio", value: JSON.stringify(tables.createCacheRatio ?? {}) },
   ];
 
   // new-api 的 option 接口一次只收一个 key，串行写以便定位失败点

@@ -62,7 +62,7 @@ export function PricingClient() {
 
   function updateNumericField(
     index: number,
-    field: "inputRatio" | "outputRatio" | "perCallPrice",
+    field: "inputRatio" | "outputRatio" | "perCallPrice" | "cacheRatio" | "createCacheRatio",
     raw: string,
   ) {
     const key = `${index}:${field}`;
@@ -80,7 +80,7 @@ export function PricingClient() {
     }
   }
 
-  function numericFieldText(index: number, field: "inputRatio" | "outputRatio" | "perCallPrice", value: number | null) {
+  function numericFieldText(index: number, field: string, value: number | null) {
     return draftFields[`${index}:${field}`] ?? fieldText(value);
   }
 
@@ -191,6 +191,8 @@ export function PricingClient() {
                 <th className="px-4 py-3 font-normal">模型</th>
                 <th className="w-28 px-3 py-3 font-normal">输入倍率</th>
                 <th className="w-28 px-3 py-3 font-normal">输出倍率</th>
+                <th className="w-28 px-3 py-3 font-normal">缓存命中</th>
+                <th className="w-28 px-3 py-3 font-normal">缓存写入</th>
                 <th className="w-32 px-3 py-3 font-normal">按次单价($ / ¥)</th>
                 <th className="w-56 px-3 py-3 font-normal">实际单价 / 1M tokens（$ / ¥）</th>
                 <th className="w-16 px-3 py-3 font-normal"></th>
@@ -199,7 +201,7 @@ export function PricingClient() {
             <tbody>
               {visible.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-[var(--color-muted)]">
+                  <td colSpan={8} className="px-4 py-8 text-center text-sm text-[var(--color-muted)]">
                     {rows.length === 0 ? "还没有配置任何模型倍率" : "没有匹配的模型"}
                   </td>
                 </tr>
@@ -231,6 +233,12 @@ export function PricingClient() {
                         placeholder="1"
                         className={INPUT_CLASS}
                       />
+                    </td>
+                    <td className="px-3 py-2">
+                      <input value={numericFieldText(index, "cacheRatio", row.cacheRatio ?? null)} onChange={(e) => updateNumericField(index, "cacheRatio", e.target.value)} placeholder="—" className={INPUT_CLASS} />
+                    </td>
+                    <td className="px-3 py-2">
+                      <input value={numericFieldText(index, "createCacheRatio", row.createCacheRatio ?? null)} onChange={(e) => updateNumericField(index, "createCacheRatio", e.target.value)} placeholder="—" className={INPUT_CLASS} />
                     </td>
                     <td className="px-3 py-2">
                       <input
