@@ -132,8 +132,13 @@ export function validatePricingRow(row: ModelPricingRow): string | null {
     if (value < 0) return `${label}不能为负数`;
   }
 
-  if (row.perCallPrice === null && row.inputRatio === null) {
-    return "请至少填写输入倍率或按次单价";
+  if (
+    row.perCallPrice === null &&
+    row.inputRatio === null &&
+    row.cacheRatio == null &&
+    row.createCacheRatio == null
+  ) {
+    return "请至少填写输入倍率、缓存倍率或按次单价";
   }
   return null;
 }

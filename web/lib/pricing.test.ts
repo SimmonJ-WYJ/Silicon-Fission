@@ -103,6 +103,17 @@ test("round-trips cache hit and cache creation ratios", () => {
   assert.deepEqual(tables.createCacheRatio, { "gpt-5.6-sol": 1.25 });
 });
 
+test("accepts a cache-only row already present in New API options", () => {
+  assert.equal(validatePricingRow({
+    model: "gpt-5.6-cache-only",
+    inputRatio: null,
+    outputRatio: null,
+    perCallPrice: null,
+    cacheRatio: 0.08,
+    createCacheRatio: 1.25,
+  }), null);
+});
+
 test("treats a missing output ratio as 1x the input price", () => {
   const row: ModelPricingRow = {
     model: "x",
@@ -158,7 +169,7 @@ test("rejects NaN", () => {
 test("requires either an input ratio or a per-call price", () => {
   assert.equal(
     validatePricingRow({ model: "a", inputRatio: null, outputRatio: 2, perCallPrice: null }),
-    "请至少填写输入倍率或按次单价",
+    "请至少填写输入倍率、缓存倍率或按次单价",
   );
 });
 
