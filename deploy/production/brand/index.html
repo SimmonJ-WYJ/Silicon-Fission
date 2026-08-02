@@ -39,55 +39,95 @@
     /* Header */
     header {
       border-bottom: 1px solid var(--border);
-      padding: 16px 0;
+      padding: 0;
       position: sticky;
       top: 0;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(8px);
+      background: white;
       z-index: 100;
+      height: 64px;
     }
 
     .header-content {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      height: 100%;
+      padding: 0 24px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 40px;
     }
 
     .logo {
       display: flex;
       align-items: center;
       gap: 12px;
-      font-size: 20px;
+      font-size: 16px;
       font-weight: 600;
       color: var(--text-primary);
       text-decoration: none;
     }
 
     .logo img {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-links a {
+      color: var(--text-primary);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary);
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 20px;
     }
 
-    .lang-toggle {
+    .icon-btn {
       background: none;
-      border: 1px solid var(--border);
-      padding: 6px 12px;
-      border-radius: 6px;
+      border: none;
       cursor: pointer;
-      font-size: 14px;
-      color: var(--text-secondary);
-      transition: all 0.2s;
+      font-size: 18px;
+      color: var(--text-primary);
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
     }
 
-    .lang-toggle:hover {
-      border-color: var(--primary);
+    .icon-btn:hover {
       color: var(--primary);
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
     }
 
     .btn {
@@ -298,22 +338,31 @@
 </head>
 <body>
   <header>
-    <div class="container">
-      <div class="header-content">
+    <div class="header-content">
+      <div class="header-left">
         <a href="/" class="logo">
           <img src="/brand/siliconfission.svg" alt="Siliconfission">
           <span>Siliconfission</span>
         </a>
-        <div class="header-actions">
-          <button class="lang-toggle" onclick="toggleLanguage()">
-            <span class="zh-only">English</span>
-            <span class="en-only">中文</span>
-          </button>
-          <a href="/console/login" class="btn btn-secondary zh-only">登录</a>
-          <a href="/console/login" class="btn btn-secondary en-only">Sign in</a>
-          <a href="/console/register" class="btn btn-primary zh-only">注册</a>
-          <a href="/console/register" class="btn btn-primary en-only">Sign up</a>
-        </div>
+        <nav class="nav-links">
+          <a href="/" class="zh-only">主页</a>
+          <a href="/" class="en-only">Home</a>
+          <a href="/console" class="zh-only">控制台</a>
+          <a href="/console" class="en-only">Console</a>
+          <a href="/console/model" class="zh-only">模型广场</a>
+          <a href="/console/model" class="en-only">Models</a>
+          <a href="/console/leaderboard" class="zh-only">排行榜</a>
+          <a href="/console/leaderboard" class="en-only">Leaderboard</a>
+        </nav>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" onclick="toggleLanguage()" title="Language">
+          <span>🌐</span>
+        </button>
+        <button class="icon-btn" onclick="toggleTheme()" title="Theme">
+          <span class="theme-icon">☀️</span>
+        </button>
+        <a href="/console/register" class="user-avatar" title="Sign up">S</a>
       </div>
     </div>
   </header>
@@ -420,6 +469,12 @@
       const newLang = currentLang === 'zh-CN' ? 'en' : 'zh-CN';
       html.setAttribute('lang', newLang);
       localStorage.setItem('preferredLang', newLang);
+    }
+
+    // Theme toggle (placeholder - just toggles icon)
+    function toggleTheme() {
+      const icon = document.querySelector('.theme-icon');
+      icon.textContent = icon.textContent === '☀️' ? '🌙' : '☀️';
     }
 
     // Restore language preference
