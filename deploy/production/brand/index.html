@@ -102,10 +102,65 @@
       align-items: center;
       justify-content: center;
       transition: color 0.2s;
+      position: relative;
     }
 
     .icon-btn:hover {
       color: var(--primary);
+    }
+
+    /* Language dropdown */
+    .lang-dropdown {
+      position: relative;
+    }
+
+    .lang-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      min-width: 160px;
+      padding: 8px 0;
+      display: none;
+      z-index: 1000;
+    }
+
+    .lang-dropdown-menu.show {
+      display: block;
+    }
+
+    .lang-dropdown-menu button {
+      width: 100%;
+      padding: 10px 16px;
+      text-align: left;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text-primary);
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .lang-dropdown-menu button:hover {
+      background: var(--bg);
+    }
+
+    .lang-dropdown-menu button.active {
+      color: var(--primary);
+    }
+
+    .lang-dropdown-menu button .checkmark {
+      opacity: 0;
+    }
+
+    .lang-dropdown-menu button.active .checkmark {
+      opacity: 1;
     }
 
     .user-avatar {
@@ -245,9 +300,21 @@
         </nav>
       </div>
       <div class="header-actions">
-        <button class="icon-btn" onclick="toggleLanguage()" title="Language">
-          <span>🌐</span>
-        </button>
+        <div class="lang-dropdown">
+          <button class="icon-btn" onclick="toggleLangDropdown()" title="Language">
+            <span>🌐</span>
+          </button>
+          <div class="lang-dropdown-menu" id="langMenu">
+            <button onclick="setLanguage('zh-CN')" data-lang="zh-CN">
+              <span>简体中文</span>
+              <span class="checkmark">✓</span>
+            </button>
+            <button onclick="setLanguage('en')" data-lang="en">
+              <span>English</span>
+              <span class="checkmark">✓</span>
+            </button>
+          </div>
+        </div>
         <button class="icon-btn" onclick="toggleTheme()" title="Theme">
           <span class="theme-icon">☀️</span>
         </button>
@@ -291,23 +358,48 @@
   </footer>
 
   <script>
-    function toggleLanguage() {
-      const html = document.documentElement;
-      const currentLang = html.getAttribute('lang');
-      const newLang = currentLang === 'zh-CN' ? 'en' : 'zh-CN';
-      html.setAttribute('lang', newLang);
-      localStorage.setItem('preferredLang', newLang);
+    // Language dropdown
+    function toggleLangDropdown() {
+      const menu = document.getElementById('langMenu');
+      menu.classList.toggle('show');
     }
+
+    function setLanguage(lang) {
+      document.documentElement.setAttribute('lang', lang);
+      localStorage.setItem('preferredLang', lang);
+      updateLangDropdown();
+      toggleLangDropdown();
+    }
+
+    function updateLangDropdown() {
+      const currentLang = document.documentElement.getAttribute('lang');
+      const buttons = document.querySelectorAll('[data-lang]');
+      buttons.forEach(btn => {
+        if (btn.getAttribute('data-lang') === currentLang) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      const dropdown = document.querySelector('.lang-dropdown');
+      if (dropdown && !dropdown.contains(e.target)) {
+        document.getElementById('langMenu').classList.remove('show');
+      }
+    });
 
     function toggleTheme() {
       const icon = document.querySelector('.theme-icon');
       icon.textContent = icon.textContent === '☀️' ? '🌙' : '☀️';
     }
 
-    const savedLang = localStorage.getItem('preferredLang');
-    if (savedLang) {
-      document.documentElement.setAttribute('lang', savedLang);
-    }
+    // Restore language preference
+    const savedLang = localStorage.getItem('preferredLang') || 'zh-CN';
+    document.documentElement.setAttribute('lang', savedLang);
+    updateLangDropdown();
   </script>
 </body>
 </html>
