@@ -189,6 +189,45 @@
       text-decoration: none;
     }
 
+    /* 登录状态区:未确定前保持占位,避免闪烁 */
+    .auth-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 32px;
+      min-height: 32px;
+    }
+
+    .auth-area[data-state="loading"] > * {
+      visibility: hidden;
+    }
+
+    .auth-link {
+      font-size: 14px;
+      text-decoration: none;
+      padding: 7px 14px;
+      border-radius: 6px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .auth-link-login {
+      color: var(--text-primary);
+    }
+
+    .auth-link-login:hover {
+      background: var(--bg);
+    }
+
+    .auth-link-register {
+      background: var(--primary);
+      color: white;
+    }
+
+    .auth-link-register:hover {
+      background: var(--primary-hover);
+    }
+
     /* Hero */
     .hero {
       min-height: calc(100vh - 64px);
@@ -331,7 +370,9 @@
             </button>
           </div>
         </div>
-        <a href="/console/register" class="user-avatar" title="Sign up">S</a>
+        <div class="auth-area" id="authArea" data-state="loading">
+          <a href="/sign-in" class="auth-link auth-link-login">登录</a>
+        </div>
       </div>
     </div>
   </header>
@@ -382,6 +423,8 @@
       localStorage.setItem('preferredLang', lang);
       updateLangDropdown();
       toggleLangDropdown();
+      // 登录/注册按钮是 JS 渲染的,不受 zh-only/en-only 影响,需重绘
+      if (typeof renderAuth === 'function') renderAuth(currentUser);
     }
 
     function updateLangDropdown() {
@@ -408,6 +451,47 @@
     const savedLang = localStorage.getItem('preferredLang') || 'zh-CN';
     document.documentElement.setAttribute('lang', savedLang);
     updateLangDropdown();
+
+    // 登录状态检测:/api/user/self 未登录返回 401
+    let currentUser = null;
+
+    function renderAuth(user) {
+      currentUser = user;
+      const area = document.getElementById('authArea');
+      const zh = document.documentElement.getAttribute('lang') === 'zh-CN';
+
+      if (user) {
+        const initial = (user.display_name || user.username || 'U').trim().charAt(0).toUpperCase();
+        area.innerHTML = '';
+        const link = document.createElement('a');
+        link.href = '/dashboard';
+        link.className = 'user-avatar';
+        link.title = user.display_name || user.username || '';
+        link.textContent = initial;
+        area.appendChild(link);
+      } else {
+        area.innerHTML = '';
+        const login = document.createElement('a');
+        login.href = '/sign-in';
+        login.className = 'auth-link auth-link-login';
+        login.textContent = zh ? '登录' : 'Log in';
+
+        const register = document.createElement('a');
+        register.href = '/sign-up';
+        register.className = 'auth-link auth-link-register';
+        register.textContent = zh ? '注册' : 'Sign up';
+
+        area.appendChild(login);
+        area.appendChild(register);
+      }
+
+      area.setAttribute('data-state', 'ready');
+    }
+
+    fetch('/api/user/self', { credentials: 'include' })
+      .then(res => (res.ok ? res.json() : null))
+      .then(body => renderAuth(body && body.success ? body.data : null))
+      .catch(() => renderAuth(null));
   </script>
 </body>
 </html>
