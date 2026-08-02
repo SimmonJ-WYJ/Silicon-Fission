@@ -331,26 +331,6 @@
             </button>
           </div>
         </div>
-        <button class="icon-btn" onclick="toggleTheme()" title="Theme">
-          <svg class="theme-icon sun" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-          </svg>
-        </button>
-        <button class="icon-btn" title="Help">
-          <svg viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-        </button>
         <a href="/console/register" class="user-avatar" title="Sign up">S</a>
       </div>
     </div>
@@ -423,10 +403,6 @@
         document.getElementById('langMenu').classList.remove('show');
       }
     });
-
-    function toggleTheme() {
-      // Theme toggle placeholder - icons are SVG, no need to swap
-    }
 
     // Restore language preference
     const savedLang = localStorage.getItem('preferredLang') || 'zh-CN';
