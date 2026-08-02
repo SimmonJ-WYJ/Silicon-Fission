@@ -19,6 +19,7 @@
       --text-secondary: #666;
       --bg: #f8f9fa;
       --border: #e5e7eb;
+      --header-bg: #ffffff;
     }
 
     body {
@@ -30,7 +31,7 @@
     /* Header */
     header {
       border-bottom: 1px solid var(--border);
-      background: white;
+      background: var(--header-bg);
       position: sticky;
       top: 0;
       z-index: 100;
@@ -88,25 +89,36 @@
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 12px;
     }
 
     .icon-btn {
       background: none;
       border: none;
       cursor: pointer;
-      font-size: 18px;
       color: var(--text-primary);
       padding: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: color 0.2s;
       position: relative;
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
     }
 
     .icon-btn:hover {
-      color: var(--primary);
+      background: var(--bg);
+    }
+
+    .icon-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     /* Language dropdown */
@@ -302,7 +314,11 @@
       <div class="header-actions">
         <div class="lang-dropdown">
           <button class="icon-btn" onclick="toggleLangDropdown()" title="Language">
-            <span>🌐</span>
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+            </svg>
           </button>
           <div class="lang-dropdown-menu" id="langMenu">
             <button onclick="setLanguage('zh-CN')" data-lang="zh-CN">
@@ -316,7 +332,24 @@
           </div>
         </div>
         <button class="icon-btn" onclick="toggleTheme()" title="Theme">
-          <span class="theme-icon">☀️</span>
+          <svg class="theme-icon sun" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+        <button class="icon-btn" title="Help">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
         </button>
         <a href="/console/register" class="user-avatar" title="Sign up">S</a>
       </div>
@@ -392,8 +425,7 @@
     });
 
     function toggleTheme() {
-      const icon = document.querySelector('.theme-icon');
-      icon.textContent = icon.textContent === '☀️' ? '🌙' : '☀️';
+      // Theme toggle placeholder - icons are SVG, no need to swap
     }
 
     // Restore language preference
