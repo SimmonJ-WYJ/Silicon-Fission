@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Siliconfission - 一个 API Key，接入多种大模型</title>
+  <title>Siliconfission - 统一的大模型接入平台</title>
   <link rel="icon" type="image/svg+xml" href="/brand/siliconfission.svg">
   <style>
     * {
@@ -15,34 +15,24 @@
     :root {
       --primary: #1060FF;
       --primary-hover: #0050E6;
-      --secondary: #00B9FC;
       --text-primary: #1a1a1a;
       --text-secondary: #666;
-      --bg: #ffffff;
-      --bg-light: #f8f9fa;
+      --bg: #f8f9fa;
       --border: #e5e7eb;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-      line-height: 1.6;
-      color: var(--text-primary);
       background: var(--bg);
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 24px;
+      color: var(--text-primary);
     }
 
     /* Header */
     header {
       border-bottom: 1px solid var(--border);
-      padding: 0;
+      background: white;
       position: sticky;
       top: 0;
-      background: white;
       z-index: 100;
       height: 64px;
     }
@@ -53,6 +43,8 @@
       align-items: center;
       height: 100%;
       padding: 0 24px;
+      max-width: 1440px;
+      margin: 0 auto;
     }
 
     .header-left {
@@ -130,16 +122,55 @@
       text-decoration: none;
     }
 
+    /* Hero */
+    .hero {
+      min-height: calc(100vh - 64px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 24px;
+    }
+
+    .hero h1 {
+      font-size: 72px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-subtitle {
+      font-size: 20px;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+    }
+
+    .hero-subtitle .underline {
+      text-decoration: underline;
+      color: var(--text-primary);
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
     .btn {
-      padding: 10px 24px;
+      padding: 14px 32px;
       border-radius: 8px;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 500;
       text-decoration: none;
       transition: all 0.2s;
       cursor: pointer;
       border: none;
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .btn-primary {
@@ -153,7 +184,7 @@
     }
 
     .btn-secondary {
-      background: transparent;
+      background: white;
       color: var(--text-primary);
       border: 1px solid var(--border);
     }
@@ -163,176 +194,39 @@
       color: var(--primary);
     }
 
-    /* Hero */
-    .hero {
-      padding: 120px 0 80px;
-      text-align: center;
-    }
-
-    .hero h1 {
-      font-size: 56px;
-      font-weight: 700;
-      line-height: 1.2;
-      margin-bottom: 24px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .hero p {
-      font-size: 20px;
-      color: var(--text-secondary);
-      margin-bottom: 40px;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    /* Features */
-    .features {
-      padding: 80px 0;
-      background: var(--bg-light);
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 32px;
-      margin-top: 48px;
-    }
-
-    .feature-card {
-      background: white;
-      padding: 32px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-    }
-
-    .feature-card h3 {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: var(--text-primary);
-    }
-
-    .feature-card p {
-      color: var(--text-secondary);
-      font-size: 15px;
-      line-height: 1.6;
-    }
-
-    /* Integration */
-    .integration {
-      padding: 80px 0;
-      text-align: center;
-    }
-
-    .integration h2 {
-      font-size: 36px;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
-
-    .integration p {
-      font-size: 18px;
-      color: var(--text-secondary);
-      max-width: 600px;
-      margin: 0 auto 48px;
-    }
-
-    .code-block {
-      background: #1a1a1a;
-      color: #e5e7eb;
-      padding: 24px;
-      border-radius: 12px;
-      text-align: left;
-      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
-      font-size: 14px;
-      line-height: 1.6;
-      overflow-x: auto;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .code-block .comment { color: #6b7280; }
-    .code-block .string { color: #34d399; }
-    .code-block .keyword { color: #60a5fa; }
-    .code-block .property { color: #f472b6; }
-
-    /* CTA */
-    .cta {
-      padding: 80px 0;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      text-align: center;
-      color: white;
-    }
-
-    .cta h2 {
-      font-size: 36px;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
-
-    .cta p {
-      font-size: 18px;
-      margin-bottom: 32px;
-      opacity: 0.95;
-    }
-
-    .cta .btn-primary {
-      background: white;
-      color: var(--primary);
-    }
-
-    .cta .btn-primary:hover {
-      background: #f8f9fa;
-    }
-
     /* Footer */
     footer {
-      padding: 32px 0;
+      padding: 32px 24px;
       border-top: 1px solid var(--border);
       text-align: center;
       color: var(--text-secondary);
       font-size: 14px;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .hero h1 {
-        font-size: 36px;
-      }
-
-      .hero p {
-        font-size: 16px;
-      }
-
-      .features-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .integration h2, .cta h2 {
-        font-size: 28px;
-      }
-
-      .header-content {
-        flex-direction: column;
-        gap: 16px;
-      }
+      background: white;
     }
 
     /* Language specific content */
     [lang="en"] .zh-only,
     [lang="zh-CN"] .en-only {
       display: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 42px;
+      }
+
+      .hero-subtitle {
+        font-size: 16px;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .header-left {
+        gap: 0;
+      }
     }
   </style>
 </head>
@@ -369,100 +263,39 @@
 
   <main>
     <section class="hero">
-      <div class="container">
-        <h1 class="zh-only">一个 API Key，接入多种大模型</h1>
-        <h1 class="en-only">One API Key. Multiple AI models.</h1>
+      <h1 class="zh-only">统一的大模型接入平台</h1>
+      <h1 class="en-only">The Unified Interface For LLMs</h1>
 
-        <p class="zh-only">使用统一密钥和兼容接口，快速连接 OpenAI 与 Claude 生态中的模型能力。</p>
-        <p class="en-only">Use one unified key and compatible APIs to access models across the OpenAI and Claude ecosystems.</p>
+      <p class="hero-subtitle zh-only">
+        更优<span class="underline">价格</span>，更高<span class="underline">可用性</span>，无需订阅。
+      </p>
+      <p class="hero-subtitle en-only">
+        Better <span class="underline">prices</span>, better <span class="underline">uptime</span>, no subscriptions.
+      </p>
 
-        <div class="hero-actions">
-          <a href="/console/register" class="btn btn-primary zh-only">创建 API Key</a>
-          <a href="/console/register" class="btn btn-primary en-only">Create API Key</a>
+      <div class="hero-actions">
+        <a href="/console/register" class="btn btn-primary zh-only">
+          创建 API Key
+        </a>
+        <a href="/console/register" class="btn btn-primary en-only">
+          Get API Key
+        </a>
 
-          <a href="https://github.com/SimmonJ-WYJ/Silicon-Fission" target="_blank" class="btn btn-secondary zh-only">查看文档</a>
-          <a href="https://github.com/SimmonJ-WYJ/Silicon-Fission" target="_blank" class="btn btn-secondary en-only">Read the Docs</a>
-        </div>
-      </div>
-    </section>
-
-    <section class="features">
-      <div class="container">
-        <div class="features-grid">
-          <div class="feature-card">
-            <h3 class="zh-only">一个 Key，统一管理</h3>
-            <h3 class="en-only">One key, centrally managed</h3>
-
-            <p class="zh-only">无需维护多套凭证。创建一个 API Key，即可通过统一平台调用不同模型。</p>
-            <p class="en-only">No need to maintain separate credentials. Create one API key to call different models through one platform.</p>
-          </div>
-
-          <div class="feature-card">
-            <h3 class="zh-only">保持熟悉的接入方式</h3>
-            <h3 class="en-only">Keep your existing workflow</h3>
-
-            <p class="zh-only">兼容常见的 OpenAI 与 Claude 请求格式，降低迁移、集成与维护成本。</p>
-            <p class="en-only">Compatible with common OpenAI and Claude request formats, reducing migration, integration, and maintenance effort.</p>
-          </div>
-
-          <div class="feature-card">
-            <h3 class="zh-only">为每个任务选择合适的模型</h3>
-            <h3 class="en-only">Choose the right model for every task</h3>
-
-            <p class="zh-only">根据质量、响应速度、上下文能力与成本，自由选择更适合当前任务的模型。</p>
-            <p class="en-only">Select the model that best fits your needs for quality, latency, context capacity, and cost.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="integration">
-      <div class="container">
-        <h2 class="zh-only">一次集成，保留更多选择</h2>
-        <h2 class="en-only">Integrate once. Keep more options.</h2>
-
-        <p class="zh-only">创建 API Key 后，即可通过 OpenAI 或 Claude 兼容入口发起请求。</p>
-        <p class="en-only">Create an API key and send requests through OpenAI- or Claude-compatible endpoints.</p>
-
-        <div class="code-block">
-<span class="comment">// OpenAI compatible endpoint</span>
-<span class="keyword">const</span> response = <span class="keyword">await</span> fetch(<span class="string">'https://api.siliconfission.com/v1/chat/completions'</span>, {
-  <span class="property">method</span>: <span class="string">'POST'</span>,
-  <span class="property">headers</span>: {
-    <span class="string">'Authorization'</span>: <span class="string">'Bearer YOUR_API_KEY'</span>,
-    <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span>
-  },
-  <span class="property">body</span>: JSON.stringify({
-    <span class="property">model</span>: <span class="string">'gpt-4'</span>,
-    <span class="property">messages</span>: [{ <span class="property">role</span>: <span class="string">'user'</span>, <span class="property">content</span>: <span class="string">'Hello!'</span> }]
-  })
-});
-        </div>
-      </div>
-    </section>
-
-    <section class="cta">
-      <div class="container">
-        <h2 class="zh-only">开始构建你的 AI 应用</h2>
-        <h2 class="en-only">Start building with AI</h2>
-
-        <p class="zh-only">用一个 API Key，连接你需要的大模型能力。</p>
-        <p class="en-only">Use one API key to connect the AI capabilities your product needs.</p>
-
-        <a href="/console/register" class="btn btn-primary zh-only">立即创建 API Key</a>
-        <a href="/console/register" class="btn btn-primary en-only">Create API Key</a>
+        <a href="/console/model" class="btn btn-secondary zh-only">
+          浏览模型 →
+        </a>
+        <a href="/console/model" class="btn btn-secondary en-only">
+          Explore Models →
+        </a>
       </div>
     </section>
   </main>
 
   <footer>
-    <div class="container">
-      <p>&copy; 2025 Siliconfission. All rights reserved.</p>
-    </div>
+    <p>&copy; 2025 Siliconfission. All rights reserved.</p>
   </footer>
 
   <script>
-    // Language toggle
     function toggleLanguage() {
       const html = document.documentElement;
       const currentLang = html.getAttribute('lang');
@@ -471,13 +304,11 @@
       localStorage.setItem('preferredLang', newLang);
     }
 
-    // Theme toggle (placeholder - just toggles icon)
     function toggleTheme() {
       const icon = document.querySelector('.theme-icon');
       icon.textContent = icon.textContent === '☀️' ? '🌙' : '☀️';
     }
 
-    // Restore language preference
     const savedLang = localStorage.getItem('preferredLang');
     if (savedLang) {
       document.documentElement.setAttribute('lang', savedLang);
