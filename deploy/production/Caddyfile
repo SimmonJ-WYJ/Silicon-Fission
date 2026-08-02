@@ -9,11 +9,25 @@ www.{$DOMAIN} {
 {$DOMAIN} {
     encode gzip
 
+    # 落地页
+    handle / {
+        root * /srv/brand
+        try_files {path} /index.html
+        file_server
+    }
+
+    # 静态资源 (logo, CSS)
     handle_path /brand/* {
         root * /srv/brand
         file_server
     }
 
+    # New API 控制台
+    handle /console/* {
+        reverse_proxy new-api:3000
+    }
+
+    # New API 其他路由 (OAuth callback, API endpoints, etc.)
     handle {
         reverse_proxy new-api:3000
     }
