@@ -74,6 +74,17 @@ describe('normalizeStatus', () => {
     expect(result.navigation).toEqual([]);
   });
 
+  it('keeps docs disabled even when the status configuration enables it', () => {
+    const result = normalizeStatus({
+      success: true,
+      data: {
+        HeaderNavModules: JSON.stringify({ home: true, docs: true }),
+      },
+    });
+
+    expect(result.navigation.map((item) => item.key)).toEqual(['home']);
+  });
+
   it('uses a three-second timeout and caches a successful response', async () => {
     const timeout = vi.spyOn(AbortSignal, 'timeout');
     const fetcher = vi.fn().mockResolvedValue(
@@ -131,5 +142,26 @@ describe('normalizeStatus', () => {
 
     expect(result.systemName).toBe('Siliconfission');
     expect(result.navigation.some((item) => item.key === 'docs')).toBe(false);
+  });
+
+  it('uses the safe fallback rather than a future-dated cache after a request failure', async () => {
+    localStorage.setItem(
+      'sf-public-site-config-v1',
+      JSON.stringify({
+        timestamp: Date.now() + 1,
+        config: {
+          systemName: 'Future Siliconfission',
+          logoUrl: '',
+          footerHtml: '',
+          navigation: [{ key: 'home', href: '/', requireAuth: false }],
+          applications: [],
+          registration: { enabled: false, password: false, github: false, oidc: false },
+        },
+      }),
+    );
+
+    const result = await loadSiteConfig(vi.fn().mockRejectedValue(new Error('offline')));
+
+    expect(result.systemName).toBe('Siliconfission');
   });
 });

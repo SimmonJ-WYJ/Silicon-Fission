@@ -65,6 +65,8 @@ function normalizeNavigation(value: unknown): NavigationItem[] {
   if (!modules) return copyDefaultNavigation();
 
   const navigation = (Object.keys(MODULES) as NavKey[]).flatMap((key) => {
+    if (key === 'docs') return [];
+
     const module = modules[key];
     return isEnabled(module)
       ? [{ key, href: MODULES[key], requireAuth: requiresAuth(module) }]
@@ -142,6 +144,7 @@ function isSiteConfig(value: unknown): value is SiteConfig {
       (item) =>
         isRecord(item) &&
         isNavKey(item.key) &&
+        item.key !== 'docs' &&
         typeof item.href === 'string' &&
         typeof item.requireAuth === 'boolean',
     ) &&
@@ -166,7 +169,11 @@ function readCachedConfig(): SiteConfig | null {
       return null;
     }
 
-    return Date.now() - cached.timestamp < CACHE_TTL_MS ? cached.config : null;
+    const now = Date.now();
+    const age = now - cached.timestamp;
+    return Number.isFinite(cached.timestamp) && cached.timestamp <= now && age < CACHE_TTL_MS
+      ? cached.config
+      : null;
   } catch {
     return null;
   }
