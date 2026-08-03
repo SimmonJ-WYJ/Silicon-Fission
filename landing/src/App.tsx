@@ -43,6 +43,9 @@ export default function App({ initialLocale, initialTheme }: AppProps) {
 
   return (
     <>
+      <a className="skip-link" href="#main-content">
+        {locale === 'zh-CN' ? '跳至主要内容' : 'Skip to main content'}
+      </a>
       <Header
         config={config}
         locale={locale}
@@ -50,7 +53,7 @@ export default function App({ initialLocale, initialTheme }: AppProps) {
         onLocaleChange={setLocale}
         onThemeChange={setTheme}
       />
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <Hero locale={locale} />
         <LogoCloud applications={config.applications} locale={locale} />
         <FeatureGrid locale={locale} />
