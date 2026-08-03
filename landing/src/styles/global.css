@@ -83,13 +83,25 @@ svg {
   color: var(--color-accent);
 }
 
-.site-header a:focus-visible,
-.site-header button:focus-visible,
-.button:focus-visible,
-.text-link:focus-visible,
-.code-demo button:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 3px;
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: var(--space-3);
+  left: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-accent-contrast);
+  background: var(--color-primary);
+  border-radius: var(--radius-control);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
 }
 
 .site-header__brand,
@@ -200,9 +212,9 @@ svg {
 
 .hero__layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(28rem, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  gap: clamp(3rem, 7vw, 7rem);
+  gap: var(--space-8);
 }
 
 .hero__copy {
@@ -402,7 +414,7 @@ svg {
   background: var(--color-surface-soft);
 }
 
-@media (min-width: 48.0625rem) {
+@media (min-width: 48rem) {
   .logo-cloud__cell:last-child:nth-child(4n + 1) {
     grid-column: 1 / -1;
   }
@@ -443,7 +455,7 @@ svg {
   right: -0.5rem;
 }
 
-@media (min-width: 48.0625rem) {
+@media (min-width: 48rem) {
   .logo-cloud__cell:nth-child(4n) .logo-cloud__plus--end-desktop,
   .logo-cloud__cell:last-child .logo-cloud__plus--end-desktop {
     display: block;
@@ -694,7 +706,7 @@ svg {
   }
 }
 
-@media (max-width: 62rem) {
+@media (min-width: 48rem) and (max-width: 63.9375rem) {
   .hero__layout {
     grid-template-columns: minmax(0, 0.85fr) minmax(24rem, 1.15fr);
     gap: var(--space-10);
@@ -710,13 +722,25 @@ svg {
   }
 }
 
-@media (max-width: 48rem) {
+@media (min-width: 64rem) {
+  .site-header {
+    min-height: 4rem;
+  }
+
+  .hero__layout {
+    grid-template-columns: minmax(0, 1fr) minmax(28rem, 1fr);
+    gap: clamp(3rem, 7vw, 7rem);
+  }
+}
+
+@media (max-width: 47.9375rem) {
   .page-shell {
     width: min(calc(100% - 2rem), var(--page-width));
   }
 
   .site-header {
     position: relative;
+    min-height: 3.5rem;
     flex-wrap: wrap;
     gap: var(--space-3);
     padding: 0 var(--space-4);

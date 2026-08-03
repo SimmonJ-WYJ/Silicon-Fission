@@ -54,6 +54,20 @@ describe('App', () => {
     expect(document.body.textContent).not.toMatch(/partner|trusted by|collaborat/i);
   });
 
+  it('provides a complete page landmark structure, a skip link, and named copy control', async () => {
+    localStorage.setItem('sf-locale', 'en');
+    render(<App />);
+
+    await screen.findByRole('heading', { name: 'One API Key. Multiple AI models.' });
+    expect(screen.getAllByRole('main')).toHaveLength(1);
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(screen.getByRole('link', { name: 'Skip to main content' })).toHaveAttribute('href', '#main-content');
+    expect(screen.getByRole('button', { name: 'Copy code' })).toBeVisible();
+    for (const link of screen.getAllByRole('link')) {
+      expect(link).toHaveAccessibleName(/\S/);
+    }
+  });
+
   it('places the real-logo compatibility grid immediately after the hero', async () => {
     localStorage.setItem('sf-locale', 'zh-CN');
     render(<App />);

@@ -76,6 +76,14 @@ describe('Header', () => {
     );
   });
 
+  it('gives every preference and navigation control an accessible name', () => {
+    renderHeader(configWith([]));
+
+    expect(screen.getByRole('button', { name: 'Toggle primary navigation' })).toBeVisible();
+    expect(screen.getByRole('button', { name: '切换至中文' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Switch to dark theme' })).toBeVisible();
+  });
+
   it('falls back to a wordmark when the configured logo cannot load', () => {
     const { container } = renderHeader({
       ...configWith([]),
