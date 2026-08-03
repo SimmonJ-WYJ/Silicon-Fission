@@ -438,8 +438,16 @@ svg {
 }
 
 .logo-cloud__plus--end {
+  display: none;
   top: -0.5rem;
   right: -0.5rem;
+}
+
+@media (min-width: 48.0625rem) {
+  .logo-cloud__cell:nth-child(4n) .logo-cloud__plus--end-desktop,
+  .logo-cloud__cell:last-child .logo-cloud__plus--end-desktop {
+    display: block;
+  }
 }
 
 .section-block {
@@ -764,6 +772,11 @@ svg {
 
   .logo-cloud__cell:last-child:nth-child(odd) {
     grid-column: 1 / -1;
+  }
+
+  .logo-cloud__cell:nth-child(2n) .logo-cloud__plus--end-mobile,
+  .logo-cloud__cell:last-child .logo-cloud__plus--end-mobile {
+    display: block;
   }
 
   .feature-grid,

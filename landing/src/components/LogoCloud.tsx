@@ -13,20 +13,21 @@ interface LogoDefinition {
   preserveColor?: boolean;
 }
 
-const ICON_BASE = 'https://unpkg.com/@lobehub/icons-static-svg@1.94.0/icons';
-
 const protocolLogos: LogoDefinition[] = [
-  { name: 'OpenAI', src: `${ICON_BASE}/openai.svg` },
-  { name: 'Claude', src: `${ICON_BASE}/claude.svg` },
-  { name: 'Gemini', src: `${ICON_BASE}/gemini.svg` },
-  { name: 'DeepSeek', src: `${ICON_BASE}/deepseek.svg` },
+  { name: 'OpenAI', src: '/compatibility-logos/openai.a595df6b4239.svg' },
+  { name: 'Claude', src: '/compatibility-logos/claude.365a70a7eb39.svg' },
+  { name: 'Gemini', src: '/compatibility-logos/gemini.87d5b3c4be75.svg' },
+  { name: 'DeepSeek', src: '/compatibility-logos/deepseek.8f9443e351b6.svg' },
 ];
 
 const applicationLogos: Record<string, LogoDefinition> = {
-  'Cherry Studio': { name: 'Cherry Studio', src: `${ICON_BASE}/cherrystudio.svg` },
+  'Cherry Studio': {
+    name: 'Cherry Studio',
+    src: '/compatibility-logos/cherry-studio.3797e06882aa.svg',
+  },
   'CC Switch': {
     name: 'CC Switch',
-    src: 'https://raw.githubusercontent.com/farion1231/cc-switch/main/src-tauri/icons/icon.png',
+    src: '/compatibility-logos/cc-switch.04225b1b9c54.png',
     preserveColor: true,
   },
 };
@@ -44,12 +45,17 @@ export function LogoCloud({ applications, locale }: LogoCloudProps) {
           {pageCopy[locale].logoCloudTitle}
         </h2>
         <div className="logo-cloud__grid">
-          {logos.map((logo, index) => (
+          {logos.map((logo) => (
             <div className="logo-cloud__cell" key={logo.name}>
               <PlusIcon className="logo-cloud__plus logo-cloud__plus--start" aria-hidden="true" />
-              {(index === logos.length - 1 || index === 3) && (
-                <PlusIcon className="logo-cloud__plus logo-cloud__plus--end" aria-hidden="true" />
-              )}
+              <PlusIcon
+                className="logo-cloud__plus logo-cloud__plus--end logo-cloud__plus--end-mobile"
+                aria-hidden="true"
+              />
+              <PlusIcon
+                className="logo-cloud__plus logo-cloud__plus--end logo-cloud__plus--end-desktop"
+                aria-hidden="true"
+              />
               <img
                 className={logo.preserveColor ? 'logo-cloud__logo' : 'logo-cloud__logo logo-cloud__logo--mono'}
                 src={logo.src}

@@ -1,5 +1,5 @@
 import { Check, Copy } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useRef, useState, type KeyboardEvent } from 'react';
 import type { Locale } from '../lib/preferences';
 
 interface CodeDemoProps {
@@ -65,8 +65,30 @@ export function CodeDemo({ locale }: CodeDemoProps) {
   const [activeKey, setActiveKey] = useState<ExampleKey>('chat');
   const [announcement, setAnnouncement] = useState('');
   const codeRef = useRef<HTMLElement>(null);
+  const tabRefs = useRef<Partial<Record<ExampleKey, HTMLButtonElement>>>({});
+  const exampleKeys = Object.keys(examples) as ExampleKey[];
   const activeExample = examples[activeKey];
   const labels = interfaceCopy[locale];
+
+  function selectExample(key: ExampleKey, moveFocus = false): void {
+    setActiveKey(key);
+    setAnnouncement('');
+    if (moveFocus) tabRefs.current[key]?.focus();
+  }
+
+  function handleTabKeyDown(event: KeyboardEvent<HTMLButtonElement>, key: ExampleKey): void {
+    const currentIndex = exampleKeys.indexOf(key);
+    let nextIndex: number | null = null;
+
+    if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % exampleKeys.length;
+    if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + exampleKeys.length) % exampleKeys.length;
+    if (event.key === 'Home') nextIndex = 0;
+    if (event.key === 'End') nextIndex = exampleKeys.length - 1;
+    if (nextIndex === null) return;
+
+    event.preventDefault();
+    selectExample(exampleKeys[nextIndex], true);
+  }
 
   function selectCode(): void {
     if (!codeRef.current || typeof window.getSelection !== 'function') return;
@@ -91,19 +113,21 @@ export function CodeDemo({ locale }: CodeDemoProps) {
     <div className="code-demo" aria-label={labels.label}>
       <div className="code-demo__toolbar">
         <div className="code-demo__tabs" role="tablist" aria-label={labels.label}>
-          {(Object.keys(examples) as ExampleKey[]).map((key) => (
+          {exampleKeys.map((key) => (
             <button
               key={key}
+              ref={(element) => {
+                tabRefs.current[key] = element ?? undefined;
+              }}
               id={`code-tab-${key}`}
               className="code-demo__tab"
               type="button"
               role="tab"
               aria-controls="code-demo-panel"
               aria-selected={activeKey === key}
-              onClick={() => {
-                setActiveKey(key);
-                setAnnouncement('');
-              }}
+              tabIndex={activeKey === key ? 0 : -1}
+              onClick={() => selectExample(key)}
+              onKeyDown={(event) => handleTabKeyDown(event, key)}
             >
               {examples[key].label}
             </button>
