@@ -85,6 +85,23 @@ describe('normalizeStatus', () => {
     expect(result.navigation.map((item) => item.key)).toEqual(['home']);
   });
 
+  it('preserves the status module key order while excluding unknown and docs modules', () => {
+    const result = normalizeStatus({
+      success: true,
+      data: {
+        HeaderNavModules: JSON.stringify({
+          rankings: true,
+          unsupported: true,
+          docs: true,
+          console: { enabled: true, requireAuth: false },
+          home: true,
+        }),
+      },
+    });
+
+    expect(result.navigation.map((item) => item.key)).toEqual(['rankings', 'console', 'home']);
+  });
+
   it('uses a three-second timeout and caches a successful response', async () => {
     const timeout = vi.spyOn(AbortSignal, 'timeout');
     const fetcher = vi.fn().mockResolvedValue(

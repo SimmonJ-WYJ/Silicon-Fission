@@ -64,13 +64,10 @@ function normalizeNavigation(value: unknown): NavigationItem[] {
   const modules = parseModules(value);
   if (!modules) return copyDefaultNavigation();
 
-  const navigation = (Object.keys(MODULES) as NavKey[]).flatMap((key) => {
-    if (key === 'docs') return [];
+  const navigation = Object.entries(modules).flatMap(([key, module]) => {
+    if (!isNavKey(key) || key === 'docs' || !isEnabled(module)) return [];
 
-    const module = modules[key];
-    return isEnabled(module)
-      ? [{ key, href: MODULES[key], requireAuth: requiresAuth(module) }]
-      : [];
+    return [{ key, href: MODULES[key], requireAuth: requiresAuth(module) }];
   });
 
   return navigation;
