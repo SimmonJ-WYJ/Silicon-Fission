@@ -1,7 +1,10 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SiteConfig } from '../types/site';
 import { Header } from './Header';
+
+const globalStyles = readFileSync('src/styles/global.css', 'utf8');
 
 afterEach(cleanup);
 
@@ -38,7 +41,8 @@ describe('Header', () => {
     );
 
     const navigation = screen.getByRole('navigation', { name: 'Primary navigation' });
-    expect(within(navigation).getAllByRole('link').map((link) => link.textContent)).toEqual([
+    const navigationLinks = navigation.querySelector<HTMLElement>('.site-header__links');
+    expect(within(navigationLinks!).getAllByRole('link').map((link) => link.textContent)).toEqual([
       'Leaderboard',
       'Console',
     ]);
@@ -80,8 +84,21 @@ describe('Header', () => {
     renderHeader(configWith([]));
 
     expect(screen.getByRole('button', { name: 'Toggle primary navigation' })).toBeVisible();
-    expect(screen.getByRole('button', { name: '切换至中文' })).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Switch to dark theme' })).toBeVisible();
+    const navigation = screen.getByRole('navigation', { name: 'Primary navigation' });
+    expect(within(navigation).getByRole('button', { name: '切换至中文' })).toBeVisible();
+    expect(within(navigation).getByRole('button', { name: 'Switch to dark theme' })).toBeVisible();
+    expect(within(navigation).getByRole('link', { name: 'Sign in / Register' })).toBeVisible();
+    expect(document.querySelector('.site-header > .site-header__controls')).not.toBeInTheDocument();
+  });
+
+  it('keeps the header at exact desktop and mobile heights without wrapping', () => {
+    expect(globalStyles).toMatch(/\.site-header\s*\{[^}]*height:\s*4rem;/s);
+    expect(globalStyles).toMatch(
+      /@media \(max-width: 47\.9375rem\)\s*\{[\s\S]*?\.site-header\s*\{[^}]*height:\s*3\.5rem;[^}]*flex-wrap:\s*nowrap;/,
+    );
+    expect(globalStyles).toMatch(
+      /@media \(max-width: 47\.9375rem\)\s*\{[\s\S]*?\.site-header__navigation\[data-open='true'\]\s*\{[^}]*position:\s*absolute;/,
+    );
   });
 
   it('falls back to a wordmark when the configured logo cannot load', () => {

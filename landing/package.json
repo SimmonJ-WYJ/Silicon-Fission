@@ -12,7 +12,10 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.43.0",
     "lucide-react": "latest",
+    "ogl": "^1.0.11",
     "react": "latest",
     "react-dom": "latest",
     "vite": "latest"
@@ -21,6 +24,7 @@
     "@playwright/test": "latest",
     "@testing-library/jest-dom": "latest",
     "@testing-library/react": "latest",
+    "@types/node": "^26.1.2",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "jsdom": "29",

@@ -69,35 +69,36 @@ export function Header({ config, locale, theme, onLocaleChange, onThemeChange }:
         aria-label="Primary navigation"
         data-open={menuOpen}
       >
-        {navigation.map((item) => (
-          <a key={item.key} href={item.href} onClick={() => setMenuOpen(false)}>
-            {labels[item.key]}
+        <div className="site-header__links">
+          {navigation.map((item) => (
+            <a key={item.key} href={item.href} onClick={() => setMenuOpen(false)}>
+              {labels[item.key]}
+            </a>
+          ))}
+        </div>
+        <div className="site-header__controls" role="group" aria-label="Landing preferences">
+          <a className="site-header__search" href={CONSOLE_SEARCH_URL}>
+            {labels.search}
           </a>
-        ))}
+          <button
+            type="button"
+            aria-label={locale === 'en' ? '切换至中文' : 'Switch to English'}
+            onClick={changeLocale}
+          >
+            {locale === 'en' ? '中文' : 'EN'}
+          </button>
+          <button
+            type="button"
+            aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+            onClick={changeTheme}
+          >
+            <span aria-hidden="true">{theme === 'light' ? '◐' : '☀'}</span>
+          </button>
+          <a className="site-header__account" href={CONSOLE_LOGIN_URL}>
+            {labels.account}
+          </a>
+        </div>
       </nav>
-
-      <div className="site-header__controls" role="group" aria-label="Landing preferences">
-        <a className="site-header__search" href={CONSOLE_SEARCH_URL}>
-          {labels.search}
-        </a>
-        <button
-          type="button"
-          aria-label={locale === 'en' ? '切换至中文' : 'Switch to English'}
-          onClick={changeLocale}
-        >
-          {locale === 'en' ? '中文' : 'EN'}
-        </button>
-        <button
-          type="button"
-          aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
-          onClick={changeTheme}
-        >
-          <span aria-hidden="true">{theme === 'light' ? '◐' : '☀'}</span>
-        </button>
-        <a className="site-header__account" href={CONSOLE_LOGIN_URL}>
-          {labels.account}
-        </a>
-      </div>
     </header>
   );
 }
