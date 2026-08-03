@@ -70,6 +70,27 @@ describe('App', () => {
     expect(within(logoCloud!).getByRole('img', { name: 'DeepSeek logo' })).toBeVisible();
     expect(within(logoCloud!).getByRole('img', { name: 'Cherry Studio logo' })).toBeVisible();
     expect(within(logoCloud!).queryByRole('img', { name: 'CC Switch logo' })).not.toBeInTheDocument();
+    for (const logo of within(logoCloud!).getAllByRole('img')) {
+      expect(logo).toHaveAttribute('src', expect.stringMatching(/^\/compatibility-logos\//));
+    }
+  });
+
+  it('renders the configured CC Switch logo from a bundled path and rejects unknown logos', async () => {
+    loadSiteConfigMock.mockResolvedValue({
+      ...baseConfig,
+      applications: ['CC Switch', 'Unknown Client'],
+    });
+    render(<App />);
+
+    const logoTitle = await screen.findByRole('heading', {
+      name: 'Compatible with the models and tools you know',
+    });
+    const logoCloud = logoTitle.closest('section');
+    const ccSwitch = within(logoCloud!).getByRole('img', { name: 'CC Switch logo' });
+
+    expect(ccSwitch).toHaveAttribute('src', expect.stringMatching(/^\/compatibility-logos\/.+\.png$/));
+    expect(within(logoCloud!).queryByRole('img', { name: 'Unknown Client logo' })).not.toBeInTheDocument();
+    expect(within(logoCloud!).getAllByRole('img')).toHaveLength(5);
   });
 
   it('uses only normalized public applications in the workflow compatibility section', async () => {

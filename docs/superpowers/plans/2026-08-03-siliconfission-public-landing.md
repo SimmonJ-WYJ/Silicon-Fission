@@ -32,6 +32,7 @@
 - `landing/src/lib/preferences.ts` — locale and theme persistence.
 - `landing/src/components/Header.tsx` — synchronized navigation and controls.
 - `landing/src/components/Hero.tsx` — headline, CTAs, and code demo.
+- `landing/src/components/LogoCloud.tsx` — Hero-bottom compatibility logo grid adapted from the supplied component.
 - `landing/src/components/FeatureGrid.tsx` — three verified capability messages.
 - `landing/src/components/IntegrationSteps.tsx` — three-step onboarding flow.
 - `landing/src/components/Compatibility.tsx` — verified protocols and applications only.
@@ -324,6 +325,7 @@ git commit -m "feat(landing): add synchronized bilingual header"
 
 **Files:**
 - Create: `landing/src/components/Hero.tsx`
+- Create: `landing/src/components/LogoCloud.tsx`
 - Create: `landing/src/components/CodeDemo.tsx`
 - Create: `landing/src/components/FeatureGrid.tsx`
 - Create: `landing/src/components/IntegrationSteps.tsx`
@@ -359,6 +361,7 @@ export const pageCopy = {
     stepsTitle: '三步开始调用',
     steps: ['注册或登录', '创建 API Key', '选择模型并发送请求'],
     compatibilityTitle: '连接你熟悉的 AI 工作流',
+    logoCloudTitle: '兼容你熟悉的模型与工具',
     finalTitle: '准备好开始构建了吗？',
     finalBody: '用一个 API Key，连接你的产品所需的大模型能力。',
   },
@@ -377,6 +380,7 @@ export const pageCopy = {
     stepsTitle: 'Start in three steps',
     steps: ['Register or sign in', 'Create an API key', 'Choose a model and send a request'],
     compatibilityTitle: 'Connect your existing AI workflow',
+    logoCloudTitle: 'Compatible with the models and tools you know',
     finalTitle: 'Ready to start building?',
     finalBody: 'Use one API key to connect the model capabilities your product needs.',
   },
@@ -411,6 +415,7 @@ Compose sections in this order:
 <Header />
 <main>
   <Hero />
+  <LogoCloud />
   <FeatureGrid />
   <IntegrationSteps />
   <Compatibility />
@@ -420,6 +425,8 @@ Compose sections in this order:
 ```
 
 The Hero must link primary CTA to `https://console.siliconfission.com/console/token` and secondary CTA to `https://console.siliconfission.com/pricing`.
+
+Place `LogoCloud` immediately below the Hero as a separate full-width section. Adapt the supplied `logo-cloud-2.tsx` visual language—two columns on mobile, four on desktop, shared borders, alternating soft backgrounds, and Lucide `PlusIcon` grid intersections—to the existing CSS token system. Do not add shadcn or Tailwind solely for this component. Render only confirmed ecosystem/tool names supplied by normalized public configuration plus confirmed protocol brands: OpenAI, Claude, Gemini, DeepSeek, Cherry Studio, and CC Switch. Use real theme-safe SVG or PNG logo assets with descriptive alt text. The heading must use `logoCloudTitle`; never use “collaborate,” “partner,” “trusted by,” or wording that implies an official commercial relationship.
 
 The code demo may expose only these confirmed protocol tabs from the current platform: OpenAI Chat (`POST /v1/chat/completions`), Responses (`POST /v1/responses`), and Claude (`POST /v1/messages`). Use `your-model` rather than naming a model that may be unavailable. Copy buttons announce success through an `aria-live="polite"` region.
 
