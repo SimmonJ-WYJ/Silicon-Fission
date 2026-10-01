@@ -7,8 +7,8 @@ interface HeroProps {
   locale: Locale;
 }
 
-const CREATE_KEY_URL = 'https://console.siliconfission.com/console/token';
-const MODELS_URL = 'https://console.siliconfission.com/pricing';
+const CREATE_KEY_URL = 'https://siliconfission.com/console/token';
+const MODELS_URL = 'https://siliconfission.com/pricing';
 
 export function Hero({ locale }: HeroProps) {
   const copy = pageCopy[locale];

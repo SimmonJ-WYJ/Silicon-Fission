@@ -7,7 +7,7 @@ interface CompatibilityProps {
   locale: Locale;
 }
 
-const CREATE_KEY_URL = 'https://console.siliconfission.com/console/token';
+const CREATE_KEY_URL = 'https://siliconfission.com/console/token';
 
 export function Compatibility({ applications, locale }: CompatibilityProps) {
   const copy = pageCopy[locale];

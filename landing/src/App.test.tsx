@@ -17,7 +17,7 @@ const baseConfig: SiteConfig = {
   footerHtml: '',
   navigation: [
     { key: 'home', href: '/', requireAuth: false },
-    { key: 'pricing', href: 'https://console.siliconfission.com/pricing', requireAuth: false },
+    { key: 'pricing', href: 'https://siliconfission.com/pricing', requireAuth: false },
   ],
   applications: ['Cherry Studio'],
   registration: { enabled: true, password: true, github: false, oidc: false },
@@ -44,11 +44,11 @@ describe('App', () => {
     expect(screen.queryByText('One API Key. Multiple AI models.')).not.toBeInTheDocument();
 
     for (const link of screen.getAllByRole('link', { name: '创建 API Key' })) {
-      expect(link).toHaveAttribute('href', 'https://console.siliconfission.com/console/token');
+      expect(link).toHaveAttribute('href', 'https://siliconfission.com/console/token');
     }
     expect(screen.getByRole('link', { name: '浏览模型' })).toHaveAttribute(
       'href',
-      'https://console.siliconfission.com/pricing',
+      'https://siliconfission.com/pricing',
     );
     expect(document.body.textContent).not.toMatch(/99\.9%|50\+|uptime/i);
     expect(document.body.textContent).not.toMatch(/partner|trusted by|collaborat/i);
@@ -118,7 +118,7 @@ describe('App', () => {
     expect(within(section!).queryByText('CC Switch')).not.toBeInTheDocument();
     expect(within(section!).getByRole('link', { name: 'Create API Key' })).toHaveAttribute(
       'href',
-      'https://console.siliconfission.com/console/token',
+      'https://siliconfission.com/console/token',
     );
   });
 

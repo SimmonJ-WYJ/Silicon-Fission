@@ -15,7 +15,7 @@ const copy = {
   },
 } as const;
 
-const CONSOLE_KEY_URL = 'https://console.siliconfission.com/token';
+const CONSOLE_KEY_URL = 'https://siliconfission.com/token';
 
 export function CallToAction({ locale }: CallToActionProps) {
   const text = copy[locale];

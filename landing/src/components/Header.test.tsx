@@ -35,8 +35,8 @@ describe('Header', () => {
   it('renders only enabled navigation in its configured order', () => {
     renderHeader(
       configWith([
-        { key: 'rankings', href: 'https://console.siliconfission.com/rankings', requireAuth: false },
-        { key: 'console', href: 'https://console.siliconfission.com/dashboard', requireAuth: false },
+        { key: 'rankings', href: 'https://siliconfission.com/rankings', requireAuth: false },
+        { key: 'console', href: 'https://siliconfission.com/dashboard', requireAuth: false },
       ]),
     );
 
@@ -51,14 +51,14 @@ describe('Header', () => {
 
   it('never renders the docs module even if it is included in the configuration', () => {
     renderHeader(
-      configWith([{ key: 'docs', href: 'https://console.siliconfission.com/docs', requireAuth: false }]),
+      configWith([{ key: 'docs', href: 'https://siliconfission.com/docs', requireAuth: false }]),
     );
 
     expect(screen.queryByRole('link', { name: 'Docs' })).not.toBeInTheDocument();
   });
 
   it('switches navigation labels with the selected locale', () => {
-    const config = configWith([{ key: 'pricing', href: 'https://console.siliconfission.com/pricing', requireAuth: false }]);
+    const config = configWith([{ key: 'pricing', href: 'https://siliconfission.com/pricing', requireAuth: false }]);
     const { rerender } = renderHeader(config);
 
     expect(screen.getByRole('link', { name: 'Models' })).toBeInTheDocument();
@@ -76,7 +76,7 @@ describe('Header', () => {
 
     expect(screen.getByRole('link', { name: 'Sign in / Register' })).toHaveAttribute(
       'href',
-      'https://console.siliconfission.com/login',
+      'https://siliconfission.com/login',
     );
   });
 

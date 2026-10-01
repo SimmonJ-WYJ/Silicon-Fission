@@ -3,11 +3,11 @@ import type { NavKey, NavigationItem, SiteConfig } from '../types/site';
 
 const MODULES = {
   home: '/',
-  console: 'https://console.siliconfission.com/dashboard',
-  pricing: 'https://console.siliconfission.com/pricing',
-  rankings: 'https://console.siliconfission.com/rankings',
-  docs: 'https://console.siliconfission.com/docs',
-  about: 'https://console.siliconfission.com/about',
+  console: 'https://siliconfission.com/dashboard',
+  pricing: 'https://siliconfission.com/pricing',
+  rankings: 'https://siliconfission.com/rankings',
+  docs: 'https://siliconfission.com/docs',
+  about: 'https://siliconfission.com/about',
 } as const;
 
 const CACHE_KEY = 'sf-public-site-config-v1';

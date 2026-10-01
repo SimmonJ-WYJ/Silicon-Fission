@@ -49,9 +49,9 @@ describe('normalizeStatus', () => {
 
     expect(result.navigation.map((item) => item.href)).toEqual([
       '/',
-      'https://console.siliconfission.com/dashboard',
-      'https://console.siliconfission.com/pricing',
-      'https://console.siliconfission.com/rankings',
+      'https://siliconfission.com/dashboard',
+      'https://siliconfission.com/pricing',
+      'https://siliconfission.com/rankings',
     ]);
     expect(result.systemName).toBe('Siliconfission');
     expect(result.applications).toEqual(['Cherry Studio', 'CC Switch']);
@@ -148,7 +148,7 @@ describe('normalizeStatus', () => {
           systemName: 'Expired Siliconfission',
           logoUrl: '',
           footerHtml: '',
-          navigation: [{ key: 'docs', href: 'https://console.siliconfission.com/docs', requireAuth: false }],
+          navigation: [{ key: 'docs', href: 'https://siliconfission.com/docs', requireAuth: false }],
           applications: [],
           registration: { enabled: false, password: false, github: false, oidc: false },
         },

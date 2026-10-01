@@ -12,8 +12,8 @@ interface HeaderProps {
 }
 
 const FALLBACK_SYSTEM_NAME = 'Siliconfission';
-const CONSOLE_SEARCH_URL = 'https://console.siliconfission.com/dashboard?search=open';
-const CONSOLE_LOGIN_URL = 'https://console.siliconfission.com/login';
+const CONSOLE_SEARCH_URL = 'https://siliconfission.com/dashboard?search=open';
+const CONSOLE_LOGIN_URL = 'https://siliconfission.com/login';
 
 export function Header({ config, locale, theme, onLocaleChange, onThemeChange }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);

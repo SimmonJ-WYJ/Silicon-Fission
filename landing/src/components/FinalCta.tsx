@@ -6,7 +6,7 @@ interface FinalCtaProps {
   locale: Locale;
 }
 
-const CREATE_KEY_URL = 'https://console.siliconfission.com/console/token';
+const CREATE_KEY_URL = 'https://siliconfission.com/console/token';
 
 export function FinalCta({ locale }: FinalCtaProps) {
   const copy = pageCopy[locale];
