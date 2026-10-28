@@ -1,0 +1,657 @@
+--- a/web/src/features/usage-logs/types.ts
++++ b/web/src/features/usage-logs/types.ts
+@@ -297,6 +297,7 @@
+   progress?: string
+   progress_message_en?: string
+   data?: string // JSON string
++  result_url?: string
+   fail_reason?: string
+   status: string // NOT_START, SUBMITTED, IN_PROGRESS, SUCCESS, FAILURE, QUEUED, UNKNOWN
+   other?: string
+--- a/web/src/features/usage-logs/components/columns/task-logs-columns.tsx
++++ b/web/src/features/usage-logs/components/columns/task-logs-columns.tsx
+@@ -36,6 +36,7 @@
+   type AudioClip,
+ } from '../dialogs/audio-preview-dialog'
+ import { FailReasonDialog } from '../dialogs/fail-reason-dialog'
++import { VideoResultCell } from '../dialogs/video-preview-dialog'
+ import { useUsageLogsContext } from '../usage-logs-provider'
+ import {
+   createDurationColumn,
+@@ -245,20 +246,11 @@
+           log.action === TASK_ACTIONS.REFERENCE_GENERATE ||
+           log.action === TASK_ACTIONS.REMIX_GENERATE
+         const isSuccess = status === TASK_STATUS.SUCCESS
+-        const isUrl = failReason?.startsWith('http')
+-
+-        if (isSuccess && isVideoTask && isUrl) {
+-          const videoUrl = `/v1/videos/${log.task_id}/content`
+-          return (
+-            <a
+-              href={videoUrl}
+-              target='_blank'
+-              rel='noopener noreferrer'
+-              className='text-foreground text-xs hover:underline'
+-            >
+-              {t('Click to preview video')}
+-            </a>
+-          )
++        const resultUrl =
++          log.result_url || (failReason?.startsWith('http') ? failReason : '')
++
++        if (isSuccess && isVideoTask && resultUrl && log.task_id) {
++          return <VideoResultCell taskId={log.task_id} />
+         }
+ 
+         if (!failReason) {
+--- /dev/null
++++ b/web/src/features/usage-logs/components/dialogs/video-preview-dialog.tsx
+@@ -0,0 +1,153 @@
++/*
++Copyright (C) 2023-2026 QuantumNous
++
++This program is free software: you can redistribute it and/or modify
++it under the terms of the GNU Affero General Public License as
++published by the Free Software Foundation, either version 3 of the
++License, or (at your option) any later version.
++
++This program is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++GNU Affero General Public License for more details.
++
++You should have received a copy of the GNU Affero General Public License
++along with this program. If not, see <https://www.gnu.org/licenses/>.
++
++For commercial licensing, please contact support@quantumnous.com
++*/
++import { Download, Film, LoaderCircle } from 'lucide-react'
++import { useEffect, useState } from 'react'
++import { useTranslation } from 'react-i18next'
++
++import { Dialog } from '@/components/dialog'
++import { Button } from '@/components/ui/button'
++import { api } from '@/lib/api'
++
++interface VideoPreviewDialogProps {
++  taskId: string
++  onClose: () => void
++}
++
++export function VideoPreviewDialog(props: VideoPreviewDialogProps) {
++  const { t } = useTranslation()
++  const [videoUrl, setVideoUrl] = useState('')
++  const [failed, setFailed] = useState(false)
++  const [attempt, setAttempt] = useState(0)
++
++  useEffect(() => {
++    const controller = new AbortController()
++    let objectUrl = ''
++    // Use the existing authenticated client, never an upstream URL or a key in a URL.
++    void api
++      .get<Blob>(`/v1/videos/${encodeURIComponent(props.taskId)}/content`, {
++        responseType: 'blob',
++        signal: controller.signal,
++        timeout: 120000,
++        disableDuplicate: true,
++        skipErrorHandler: true,
++      })
++      .then((response) => {
++        if (controller.signal.aborted) return
++        const blob = response.data
++        if (
++          !blob.size ||
++          (!blob.type.startsWith('video/') &&
++            blob.type !== 'application/octet-stream')
++        ) {
++          throw new Error('Invalid video response')
++        }
++        objectUrl = URL.createObjectURL(blob)
++        setVideoUrl(objectUrl)
++      })
++      .catch(() => {
++        if (!controller.signal.aborted) setFailed(true)
++      })
++    return () => {
++      controller.abort()
++      if (objectUrl) URL.revokeObjectURL(objectUrl)
++    }
++  }, [props.taskId, attempt])
++
++  return (
++    <Dialog
++      open
++      onOpenChange={(open) => {
++        if (!open) props.onClose()
++      }}
++      title={t('Video Preview')}
++      description={t('Preview and download the completed video.')}
++      contentClassName='sm:max-w-4xl'
++      bodyClassName='space-y-4'
++    >
++      {failed && (
++        <div role='alert' className='space-y-3 py-6 text-center'>
++          <p>{t('Unable to load video. Please try again.')}</p>
++          <Button
++            variant='outline'
++            onClick={() => {
++              setFailed(false)
++              setVideoUrl('')
++              setAttempt((value) => value + 1)
++            }}
++          >
++            {t('Retry')}
++          </Button>
++        </div>
++      )}
++      {!failed && videoUrl && (
++        <>
++          <video
++            src={videoUrl}
++            controls
++            playsInline
++            aria-label={t('Video Preview')}
++            className='max-h-[60vh] w-full rounded-lg bg-black'
++            onError={() => setFailed(true)}
++          />
++          <a
++            href={videoUrl}
++            download={`${props.taskId}.mp4`}
++            className='focus-visible:ring-ring inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:underline focus-visible:ring-2'
++          >
++            <Download aria-hidden='true' className='size-4' />
++            {t('Download')}
++          </a>
++        </>
++      )}
++      {!failed && !videoUrl && (
++        <div
++          role='status'
++          className='flex items-center justify-center gap-2 py-12'
++        >
++          <LoaderCircle aria-hidden='true' className='size-5 animate-spin' />
++          {t('Loading')}
++        </div>
++      )}
++    </Dialog>
++  )
++}
++
++export function VideoResultCell(props: { taskId: string }) {
++  const { t } = useTranslation()
++  const [open, setOpen] = useState(false)
++  return (
++    <>
++      <button
++        type='button'
++        onClick={() => setOpen(true)}
++        aria-haspopup='dialog'
++        className='text-foreground focus-visible:ring-ring inline-flex items-center gap-1 rounded-sm text-xs hover:underline focus-visible:ring-2'
++      >
++        <Film aria-hidden='true' className='size-3' />
++        {t('View result')}
++      </button>
++      {open && (
++        <VideoPreviewDialog
++          taskId={props.taskId}
++          onClose={() => setOpen(false)}
++        />
++      )}
++    </>
++  )
++}
+--- /dev/null
++++ b/web/src/features/usage-logs/components/__tests__/video-result.test.tsx
+@@ -0,0 +1,281 @@
++/*
++Copyright (C) 2023-2026 QuantumNous
++
++This program is free software: you can redistribute it and/or modify
++it under the terms of the GNU Affero General Public License as
++published by the Free Software Foundation, either version 3 of the
++License, or (at your option) any later version.
++
++This program is distributed in the hope that it will be useful,
++but WITHOUT ANY WARRANTY; without even the implied warranty of
++MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++GNU Affero General Public License for more details.
++
++You should have received a copy of the GNU Affero General Public License
++along with this program. If not, see <https://www.gnu.org/licenses/>.
++
++For commercial licensing, please contact support@quantumnous.com
++*/
++import assert from 'node:assert/strict'
++import { after, afterEach, beforeEach, test } from 'node:test'
++
++import type { CellContext } from '@tanstack/react-table'
++import type { AxiosAdapter, AxiosRequestConfig } from 'axios'
++import { Window } from 'happy-dom'
++import type React from 'react'
++
++import zhCN from '@/i18n/locales/zh.json'
++
++import type { TaskLog } from '../../types'
++
++const dom = new Window({ url: 'http://localhost' })
++for (const key of [
++  'window',
++  'document',
++  'navigator',
++  'HTMLElement',
++  'HTMLVideoElement',
++  'SVGElement',
++  'Node',
++  'Element',
++  'Event',
++  'CustomEvent',
++  'MutationObserver',
++  'requestAnimationFrame',
++  'cancelAnimationFrame',
++  'getComputedStyle',
++  'ResizeObserver',
++] as const) {
++  Object.defineProperty(globalThis, key, {
++    configurable: true,
++    value: dom[key],
++  })
++}
++Object.defineProperty(globalThis, 'IS_REACT_ACT_ENVIRONMENT', {
++  configurable: true,
++  value: true,
++})
++const { act, createElement } = await import('react')
++const { createRoot } = await import('react-dom/client')
++const { createInstance } = await import('i18next')
++const { I18nextProvider, initReactI18next } = await import('react-i18next')
++const { useTaskLogsColumns } = await import('../columns/task-logs-columns')
++const { api } = await import('@/lib/api')
++const { useAuthStore } = await import('@/stores/auth-store')
++const i18n = createInstance()
++await i18n
++  .use(initReactI18next)
++  .init({ lng: 'en', resources: { en: { translation: {} }, zhCN } })
++const adapter = api.defaults.adapter
++const oldCreate = URL.createObjectURL
++const oldRevoke = URL.revokeObjectURL
++let revoked: string[] = []
++let roots: ReturnType<typeof createRoot>[] = []
++const task: TaskLog & { result_url: string } = {
++  id: 1,
++  user_id: 1,
++  platform: '1',
++  task_id: 'task_existing',
++  action: 'textGenerate',
++  channel_id: 61,
++  submit_time: 1,
++  status: 'SUCCESS',
++  progress: '100%',
++  fail_reason: '',
++  result_url: '/v1/videos/task_existing/content',
++}
++function Details(props: { log: TaskLog }): React.ReactNode {
++  const column = useTaskLogsColumns(false).find(
++    (c) => 'accessorKey' in c && c.accessorKey === 'fail_reason'
++  )
++  const Cell = column?.cell
++  assert.equal(typeof Cell, 'function')
++  return createElement(
++    Cell as React.ComponentType<CellContext<TaskLog, unknown>>,
++    {
++      row: { original: props.log, getValue: () => props.log.fail_reason },
++    } as unknown as CellContext<TaskLog, unknown>
++  )
++}
++async function render(log: TaskLog = task): Promise<HTMLDivElement> {
++  const container = document.createElement('div')
++  document.body.append(container)
++  const root = createRoot(container)
++  roots.push(root)
++  await act(async () =>
++    root.render(
++      <I18nextProvider i18n={i18n}>
++        <Details log={log} />
++      </I18nextProvider>
++    )
++  )
++  return container
++}
++function button(name: string): HTMLButtonElement {
++  const el = [...document.querySelectorAll('button')].find(
++    (b) => b.textContent?.trim() === name
++  )
++  assert.ok(el, `Expected button: ${name}`)
++  return el
++}
++async function click(name: string): Promise<void> {
++  await act(async () => button(name).click())
++}
++function response(
++  config: AxiosRequestConfig,
++  data = new Blob(['video'], { type: 'video/mp4' })
++) {
++  return {
++    data,
++    status: 200,
++    statusText: 'OK',
++    headers: { 'content-type': data.type },
++    config,
++  } as Awaited<ReturnType<AxiosAdapter>>
++}
++beforeEach(() => {
++  revoked = []
++  URL.createObjectURL = () => 'blob:test-video'
++  URL.revokeObjectURL = (url) => revoked.push(url)
++  useAuthStore.setState((state) => ({
++    auth: { ...state.auth, accessToken: 'dashboard-test-credential' },
++  }))
++})
++afterEach(async () => {
++  await act(async () => {
++    for (const root of roots) root.unmount()
++  })
++  roots = []
++  document.body.innerHTML = ''
++  api.defaults.adapter = adapter
++  useAuthStore.setState((state) => ({
++    auth: { ...state.auth, accessToken: null },
++  }))
++})
++after(() => {
++  URL.createObjectURL = oldCreate
++  URL.revokeObjectURL = oldRevoke
++  dom.close()
++})
++
++test('successful video with result_url and empty fail_reason offers a result button without fetching early', async () => {
++  let requests = 0
++  api.defaults.adapter = async (config) => {
++    requests++
++    return response(config)
++  }
++  await render()
++  assert.ok(button('View result'))
++  assert.equal(requests, 0)
++})
++test('opening result fetches only same-origin video with existing dashboard auth and offers playback and download', async () => {
++  let request: AxiosRequestConfig | undefined
++  api.defaults.adapter = async (config) => {
++    request = config
++    return response(config)
++  }
++  await render({
++    ...task,
++    result_url: 'https://upstream.example/private-video',
++  } as TaskLog)
++  await click('View result')
++  assert.equal(request?.url, '/v1/videos/task_existing/content')
++  assert.equal(
++    request?.headers?.Authorization,
++    'Bearer dashboard-test-credential'
++  )
++  assert.equal(request?.responseType, 'blob')
++  const video = document.querySelector('video')
++  assert.ok(video)
++  assert.equal(video.getAttribute('src'), 'blob:test-video')
++  assert.equal(video.controls, true)
++  const download = document.querySelector('a[download]')
++  assert.equal(download?.getAttribute('href'), 'blob:test-video')
++})
++test('legacy successful video URL still offers result while failed and unfinished tasks do not', async () => {
++  await render({
++    ...task,
++    result_url: undefined,
++    fail_reason: 'https://legacy.example/video',
++  } as TaskLog)
++  assert.ok(button('View result'))
++  await act(async () => {
++    for (const root of roots) root.unmount()
++  })
++  roots = []
++  document.body.innerHTML = ''
++  await render({ ...task, status: 'FAILURE', fail_reason: 'Generation failed' })
++  assert.equal(document.body.textContent?.includes('View result'), false)
++  assert.equal(document.body.textContent?.includes('Generation failed'), true)
++})
++test('failed video download shows a retry action without exposing a player or a broken download link', async () => {
++  api.defaults.adapter = async () => {
++    throw new Error('upstream unavailable')
++  }
++  await render()
++  await click('View result')
++  assert.ok(button('Retry'))
++  assert.equal(document.querySelector('video'), null)
++  assert.equal(document.querySelector('a[download]'), null)
++  api.defaults.adapter = async (config) => response(config)
++  await click('Retry')
++  assert.ok(document.querySelector('video'))
++})
++test('a JSON error body returned as HTTP 200 is not treated as a downloadable video', async () => {
++  api.defaults.adapter = async (config) =>
++    response(
++      config,
++      new Blob(['{"error":"invalid token"}'], { type: 'application/json' })
++    )
++  await render()
++  await click('View result')
++  assert.ok(button('Retry'))
++  assert.equal(document.querySelector('video'), null)
++})
++test('closing result releases its local video URL', async () => {
++  api.defaults.adapter = async (config) => response(config)
++  await render()
++  await click('View result')
++  await act(async () => {
++    for (const root of roots) root.unmount()
++  })
++  roots = []
++  assert.deepEqual(revoked, ['blob:test-video'])
++})
++test('closing a pending preview cancels the read request', async () => {
++  let signal: AxiosRequestConfig['signal']
++  api.defaults.adapter = (config) => {
++    signal = config.signal
++    return new Promise(() => {})
++  }
++  await render()
++  await click('View result')
++  assert.equal(signal?.aborted, false)
++  await act(async () => {
++    for (const root of roots) root.unmount()
++  })
++  roots = []
++  assert.equal(signal?.aborted, true)
++})
++
++test('Chinese result dialog and download use the actual locale resource', async () => {
++  await i18n.changeLanguage('zhCN')
++  try {
++    api.defaults.adapter = async (config) => response(config)
++    await render()
++    await click('查看结果')
++    assert.equal(
++      document.querySelector('a[download]')?.textContent?.trim(),
++      '下载'
++    )
++    assert.ok(document.querySelector('video[aria-label="视频预览"]'))
++  } finally {
++    await act(async () => i18n.changeLanguage('en'))
++  }
++})
++
++test('unfinished video and successful non-video task do not offer video preview', async () => {
++  await render({ ...task, status: 'IN_PROGRESS' })
++  await render({ ...task, action: 'LYRICS' })
++  assert.equal(document.querySelector('[aria-haspopup="dialog"]'), null)
++})
+--- a/web/src/i18n/locales/en.json
++++ b/web/src/i18n/locales/en.json
+@@ -2029,7 +2029,7 @@
+     "footer.columns.related.links.oneApi": "One API",
+     "footer.columns.related.title": "Related Projects",
+     "footer.defaultCopyright": "All rights reserved.",
+-    "footer.new\u0061pi.projectAttributionSuffix": "All rights reserved. Designed and developed by the project contributors.",
++    "footer.newapi.projectAttributionSuffix": "All rights reserved. Designed and developed by the project contributors.",
+     "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment": "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment",
+     "For private deployments, format: https://fastgpt.run/api/openapi": "For private deployments, format: https://fastgpt.run/api/openapi",
+     "Force a syntactically valid JSON response": "Force a syntactically valid JSON response",
+@@ -5215,6 +5215,10 @@
+     "Zero retention": "Zero retention",
+     "Zhipu": "Zhipu",
+     "Zhipu V4": "Zhipu V4",
+-    "Zoom": "Zoom"
++    "Zoom": "Zoom",
++    "View result": "View result",
++    "Video Preview": "Video Preview",
++    "Preview and download the completed video.": "Preview and download the completed video.",
++    "Unable to load video. Please try again.": "Unable to load video. Please try again."
+   }
+ }
+--- a/web/src/i18n/locales/zh.json
++++ b/web/src/i18n/locales/zh.json
+@@ -2029,7 +2029,7 @@
+     "footer.columns.related.links.oneApi": "One API",
+     "footer.columns.related.title": "相关项目",
+     "footer.defaultCopyright": "版权所有。",
+-    "footer.new\u0061pi.projectAttributionSuffix": "版权所有，由项目贡献者设计与开发。",
++    "footer.newapi.projectAttributionSuffix": "版权所有，由项目贡献者设计与开发。",
+     "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment": "对于 2025 年 5 月 10 日之后添加的渠道，在部署时无需从模型名称中移除 \".\"",
+     "For private deployments, format: https://fastgpt.run/api/openapi": "对于私有部署，格式为：https://fastgpt.run/api/openapi",
+     "Force a syntactically valid JSON response": "强制返回语法合法的 JSON",
+@@ -5215,6 +5215,10 @@
+     "Zero retention": "零数据保留",
+     "Zhipu": "智谱",
+     "Zhipu V4": "智谱 V4",
+-    "Zoom": "缩放"
++    "Zoom": "缩放",
++    "View result": "查看结果",
++    "Video Preview": "视频预览",
++    "Preview and download the completed video.": "预览并下载已生成的视频。",
++    "Unable to load video. Please try again.": "视频加载失败，请重试。"
+   }
+ }
+--- a/web/src/i18n/locales/zh-TW.json
++++ b/web/src/i18n/locales/zh-TW.json
+@@ -2029,7 +2029,7 @@
+     "footer.columns.related.links.oneApi": "One API",
+     "footer.columns.related.title": "相關項目",
+     "footer.defaultCopyright": "版權所有。",
+-    "footer.new\u0061pi.projectAttributionSuffix": "版權所有，由項目貢獻者設計與開發。",
++    "footer.newapi.projectAttributionSuffix": "版權所有，由項目貢獻者設計與開發。",
+     "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment": "對於 2025 年 5 月 10 日之後新增的渠道，在部署時無需從模型名稱中移除 \".\"",
+     "For private deployments, format: https://fastgpt.run/api/openapi": "對於私有部署，格式為：https://fastgpt.run/api/openapi",
+     "Force a syntactically valid JSON response": "強制返回語法合法的 JSON",
+@@ -5215,6 +5215,10 @@
+     "Zero retention": "零數據保留",
+     "Zhipu": "智譜",
+     "Zhipu V4": "智譜 V4",
+-    "Zoom": "縮放"
++    "Zoom": "縮放",
++    "View result": "查看結果",
++    "Video Preview": "影片預覽",
++    "Preview and download the completed video.": "預覽並下載已產生的影片。",
++    "Unable to load video. Please try again.": "影片載入失敗，請重試。"
+   }
+ }
+--- a/web/src/i18n/locales/fr.json
++++ b/web/src/i18n/locales/fr.json
+@@ -2029,7 +2029,7 @@
+     "footer.columns.related.links.oneApi": "One API",
+     "footer.columns.related.title": "Projets liés",
+     "footer.defaultCopyright": "Tous droits réservés.",
+-    "footer.new\u0061pi.projectAttributionSuffix": "Tous droits réservés. Conçu et développé par les contributeurs du projet.",
++    "footer.newapi.projectAttributionSuffix": "Tous droits réservés. Conçu et développé par les contributeurs du projet.",
+     "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment": "Pour les canaux ajoutés après le 10 mai 2025, pas besoin de supprimer \".\" des noms de modèles lors du déploiement",
+     "For private deployments, format: https://fastgpt.run/api/openapi": "Pour les déploiements privés, format : https://fastgpt.run/api/openapi",
+     "Force a syntactically valid JSON response": "Imposer une réponse JSON syntaxiquement valide",
+@@ -5215,6 +5215,10 @@
+     "Zero retention": "Aucune rétention",
+     "Zhipu": "Zhipu",
+     "Zhipu V4": "Zhipu V4",
+-    "Zoom": "Zoom"
++    "Zoom": "Zoom",
++    "View result": "Voir le résultat",
++    "Video Preview": "Aperçu vidéo",
++    "Preview and download the completed video.": "Prévisualisez et téléchargez la vidéo terminée.",
++    "Unable to load video. Please try again.": "Impossible de charger la vidéo. Veuillez réessayer."
+   }
+ }
+--- a/web/src/i18n/locales/ru.json
++++ b/web/src/i18n/locales/ru.json
+@@ -2029,7 +2029,7 @@
+     "footer.columns.related.links.oneApi": "Один API",
+     "footer.columns.related.title": "Связанные проекты",
+     "footer.defaultCopyright": "Все права защищены.",
+-    "footer.new\u0061pi.projectAttributionSuffix": "Все права защищены. Разработано участниками проекта.",
++    "footer.newapi.projectAttributionSuffix": "Все права защищены. Разработано участниками проекта.",
+     "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment": "Для каналов, добавленных после 10 мая 2025 г., не нужно удалять \".\" из имён моделей при развёртывании",
+     "For private deployments, format: https://fastgpt.run/api/openapi": "Для частных развертываний, формат: https://fastgpt.run/api/openapi",
+     "Force a syntactically valid JSON response": "Принудительно возвращать синтаксически корректный JSON",
+@@ -5215,6 +5215,10 @@
+     "Zero retention": "Без хранения данных",
+     "Zhipu": "Zhipu",
+     "Zhipu V4": "Zhipu V4",
+-    "Zoom": "Zoom"
++    "Zoom": "Zoom",
++    "View result": "Посмотреть результат",
++    "Video Preview": "Предпросмотр видео",
++    "Preview and download the completed video.": "Просмотр и скачивание готового видео.",
++    "Unable to load video. Please try again.": "Не удалось загрузить видео. Повторите попытку."
+   }
+ }
+--- a/web/src/i18n/locales/ja.json
++++ b/web/src/i18n/locales/ja.json
+@@ -2029,7 +2029,7 @@
+     "footer.columns.related.links.oneApi": "1つのAPI",
+     "footer.columns.related.title": "関連プロジェクト",
+     "footer.defaultCopyright": "すべての権利を留保します。",
+-    "footer.new\u0061pi.projectAttributionSuffix": "すべての権利を留保します。プロジェクトコントリビューターにより設計・開発されています。",
++    "footer.newapi.projectAttributionSuffix": "すべての権利を留保します。プロジェクトコントリビューターにより設計・開発されています。",
+     "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment": "2025 年 5 月 10 日以降に追加されたチャネルの場合、デプロイ時にモデル名から「.」を削除する必要はありません",
+     "For private deployments, format: https://fastgpt.run/api/openapi": "プライベートデプロイメントの場合、形式: https://fastgpt.run/api/openapi",
+     "Force a syntactically valid JSON response": "構文的に有効な JSON 応答を強制",
+@@ -5215,6 +5215,10 @@
+     "Zero retention": "データ保持なし",
+     "Zhipu": "Zhipu",
+     "Zhipu V4": "Zhipu V 4",
+-    "Zoom": "ズーム"
++    "Zoom": "ズーム",
++    "View result": "結果を表示",
++    "Video Preview": "動画プレビュー",
++    "Preview and download the completed video.": "生成済み動画をプレビューしてダウンロードします。",
++    "Unable to load video. Please try again.": "動画を読み込めませんでした。再試行してください。"
+   }
+ }
+--- a/web/src/i18n/locales/vi.json
++++ b/web/src/i18n/locales/vi.json
+@@ -2029,7 +2029,7 @@
+     "footer.columns.related.links.oneApi": "One API",
+     "footer.columns.related.title": "Các Dự Án Liên Quan",
+     "footer.defaultCopyright": "Bản quyền được bảo lưu.",
+-    "footer.new\u0061pi.projectAttributionSuffix": "Bản quyền được bảo lưu. Được thiết kế và phát triển bởi các cộng tác viên dự án.",
++    "footer.newapi.projectAttributionSuffix": "Bản quyền được bảo lưu. Được thiết kế và phát triển bởi các cộng tác viên dự án.",
+     "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment": "Đối với các kênh được thêm sau ngày 10 tháng 5 năm 2025, không cần loại bỏ \".\" khỏi tên mô hình trong quá trình triển khai",
+     "For private deployments, format: https://fastgpt.run/api/openapi": "Đối với các triển khai riêng tư, định dạng: https://fastgpt.run/api/openapi",
+     "Force a syntactically valid JSON response": "Buộc phản hồi JSON hợp lệ về cú pháp",
+@@ -5215,6 +5215,10 @@
+     "Zero retention": "Không lưu dữ liệu",
+     "Zhipu": "Zhipu",
+     "Zhipu V4": "Zhipu V4",
+-    "Zoom": "Zoom"
++    "Zoom": "Zoom",
++    "View result": "Xem kết quả",
++    "Video Preview": "Xem trước video",
++    "Preview and download the completed video.": "Xem trước và tải video đã tạo.",
++    "Unable to load video. Please try again.": "Không thể tải video. Vui lòng thử lại."
+   }
+ }
+--- a/web/rsbuild.config.ts
++++ b/web/rsbuild.config.ts
+@@ -71,6 +71,7 @@
+       proxy: devProxy,
+     },
+     output: {
++      assetPrefix: process.env.SF_FRONTEND_ASSET_PREFIX || '/',
+       // Production optimizations
+       minify: isProd,
+       target: 'web',

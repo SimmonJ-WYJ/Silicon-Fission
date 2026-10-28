@@ -14,6 +14,7 @@ Silicon Fission 是一个 LLM 统一 API 网关(OpenRouter 竞品):OpenAI 兼容
 
 > 全部服务部署在 VPS,由 Caddy 自动签发 HTTPS 证书。主域名直接呈现 New API 原生界面:普通用户在这里注册、拿 Key、看用量,管理员在这里配置渠道、模型和额度。`www` 会永久跳转到主域名。旧的自研 Next.js 前端(`web/`)已下线,历史代码仍在 git 记录中。
 
+- 🎬 **视频结果预览修复**:[补丁、构建与部署说明](deploy/production/new-api-video-preview/README.md)
 - 🚦 **正式上线手册(VPS 生产部署)**:[docs/go-live.md](docs/go-live.md)
 - 📘 **功能文档(所有已实现功能总览)**:[docs/FEATURES.md](docs/FEATURES.md)
 - 🧑‍💼 **模型供应商接入指南(新人 onboarding)**:[docs/provider-onboarding.md](docs/provider-onboarding.md)
@@ -23,7 +24,7 @@ Silicon Fission 是一个 LLM 统一 API 网关(OpenRouter 竞品):OpenAI 兼容
 
 ## 两条并行路线
 
-- **`deploy/` — 快速起站**:基于 [new-api](https://github.com/QuantumNous/new-api) 官方镜像(不改源码,规避 AGPL),一两天上线一个可对外收费的中转站,用于验证需求、跑现金流。详见 [部署指南](docs/deployment.md)。
+- **`deploy/` — 快速起站**:基于 [new-api](https://github.com/QuantumNous/new-api) 官方镜像，视频结果入口使用[单独维护的前端补丁](deploy/production/new-api-video-preview/README.md)，保留上游许可和版权声明。一两天上线一个可对外收费的中转站,用于验证需求、跑现金流。详见 [部署指南](docs/deployment.md)。
 - **`gateway/` — 自研网关**:可闭源、可差异化、可卖给企业的长期资产。等 new-api 验证市场后再加大投入。
 
 > 自研 Next.js 前端(`web/`)已于 2026-08-01 下线,主站改用 New API 原生界面,用户配置与管理配置合并在同一个平台。需要找回旧前端时从 git 历史恢复。
